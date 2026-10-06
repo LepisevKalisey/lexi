@@ -10,5 +10,6 @@ config.paths['config/initializers'] << 'lexi/config/initializers'
 config.paths['config/locales'] << 'lexi/config/locales'
 
 # Chatwoot Hub keeps relaying push notifications to the official mobile apps; LEXI only stops
-# the usage metrics and events it would send. LEXI_TELEMETRY=true keeps upstream behaviour.
-ENV['DISABLE_TELEMETRY'] = 'true' unless ENV.key?('DISABLE_TELEMETRY') || ENV.fetch('LEXI_TELEMETRY', nil) == 'true'
+# the usage metrics and events it would send. LEXI_TELEMETRY=true keeps upstream behaviour,
+# and so does the test environment, where Chatwoot's own specs cover the telemetry switch.
+ENV['DISABLE_TELEMETRY'] = 'true' unless Rails.env.test? || ENV.key?('DISABLE_TELEMETRY') || ENV.fetch('LEXI_TELEMETRY', nil) == 'true'
