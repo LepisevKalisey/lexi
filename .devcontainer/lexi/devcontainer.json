@@ -1,0 +1,17 @@
+{
+  // LEXI stand in GitHub Codespaces. Reuses Chatwoot's compose stack (app, pgvector, redis,
+  // mailhog) but keeps every port private, removes enterprise/ from the working tree and
+  // expects the browser on http://localhost:3000 through `gh codespace ports forward`.
+  "name": "LEXI stand",
+  "service": "app",
+  "dockerComposeFile": "../docker-compose.yml",
+  "workspaceFolder": "/workspace",
+  "forwardPorts": [3000, 3036, 8025],
+  "portsAttributes": {
+    "3000": { "label": "Rails Server" },
+    "3036": { "label": "Vite Dev Server" },
+    "8025": { "label": "Mailhog UI" }
+  },
+  "postCreateCommand": "bash lexi/bin/codespace-setup",
+  "postStartCommand": "bash lexi/bin/codespace-start"
+}

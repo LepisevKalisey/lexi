@@ -1,28 +1,40 @@
 # lexi/ — устройство LEXI
 
-LEXI — расширение поверх Chatwoot fazer.ai. Весь код LEXI лежит в `lexi/` и `spec/lexi/`. Ядро Chatwoot меняется в трёх местах — это «патч ядра», ниже. Каталоги `enterprise/` и `spec/enterprise/` принадлежат Chatwoot Inc., в LEXI их нет ни в рабочей копии, ни в образе.
+LEXI — расширение поверх Chatwoot fazer.ai. Весь код LEXI лежит в `lexi/` и `spec/lexi/`. Ядро Chatwoot меняется в трёх местах — это «патч ядра», ниже. Каталог `enterprise/` принадлежит Chatwoot Inc. Его нет ни в рабочей копии, ни в образе LEXI.
 
 ## Правила чистой реализации
 
-1. **Без закрытого кода.** Рабочая копия — без `enterprise/` и `spec/enterprise/`, см. «Клонирование». Кто пишет код LEXI, включая ИИ-агентов, эти каталоги не открывает. CI (`lexi-ci.yml`, задача clean-room) падает, если коммит LEXI их затрагивает.
+1. **Без закрытого кода.** Рабочая копия — без `enterprise/`, см. «Клонирование». Кто пишет код LEXI, включая ИИ-агентов, этот каталог не открывает. CI (`lexi-ci.yml`, задача clean-room) падает, если коммит LEXI затрагивает `enterprise/` или `spec/enterprise/`.
 2. **Спецификация — только из MIT-источников:** API-клиенты и экраны фронтенда (`app/javascript/dashboard/api/*.js`, `routes/dashboard/settings/*`), схема базы `db/schema.rb`, фабрики `spec/factories`, `swagger/`, публичная документация Chatwoot.
-3. **Код из чужих форков** берём, только если механическая проверка сходства с `enterprise/` чистая. Форки с перенесённым закрытым кодом не открываем: Brandpatch, samfromlv, Hermes-SRV и подобные.
-4. **Имена классов, маршруты и таблицы — как у upstream.** Тогда фронтенд работает без правок, а установку можно перевести на официальный Chatwoot и обратно без переноса данных.
+3. **Тесты upstream — приёмочные (L-013).** `spec/enterprise/` лежит вне `enterprise/` и распространяется под MIT. Тесты SLA, ролей и аудита оттуда LEXI обязан проходить без изменений. Список — `spec/lexi/upstream_specs.txt`. В рабочей копии из `spec/enterprise/` есть только файлы из этого списка.
+4. **Код из чужих форков** берём, только если механическая проверка сходства с `enterprise/` чистая. Форки с перенесённым закрытым кодом не открываем: Brandpatch, samfromlv, Hermes-SRV и подобные.
+5. **Имена классов, маршруты и таблицы — как у upstream.** Тогда фронтенд работает без правок, а установку можно перевести на официальный Chatwoot и обратно без переноса данных.
 
 ## Клонирование
 
 ```bash
 git clone --filter=blob:none --no-checkout https://github.com/LepisevKalisey/lexi.git
 cd lexi
+git config core.autocrlf false
 git sparse-checkout init --no-cone
 printf '/*\n!/enterprise/\n!/spec/enterprise/\n' > .git/info/sparse-checkout
-git config core.autocrlf false
 git checkout main
+bash lexi/bin/sparse-checkout   # добавляет тесты из spec/lexi/upstream_specs.txt
 git remote add fazer https://github.com/fazer-ai/chatwoot.git
 git remote add chatwoot https://github.com/chatwoot/chatwoot.git
 ```
 
-Шаблоны записываются прямо в `.git/info/sparse-checkout`. В Git Bash на Windows команда `git sparse-checkout set '/*'` превращает `/` в путь Windows, и исключение не срабатывает.
+Шаблоны записываются прямо в `.git/info/sparse-checkout`. В Git Bash на Windows команда `git sparse-checkout set '/*'` превращает `/` в путь Windows, и исключение не срабатывает. После правки `upstream_specs.txt` снова запустите `bash lexi/bin/sparse-checkout`.
+
+## Стенд в GitHub Codespaces (L-014)
+
+```bash
+gh codespace create -R LepisevKalisey/lexi -b main -m standardLinux32gb \
+  --devcontainer-path .devcontainer/lexi/devcontainer.json
+gh codespace ports forward 3000:3000 3036:3036 -c <имя>   # сайт стенда — http://localhost:3000
+```
+
+Конфиг `.devcontainer/lexi` берёт стек Chatwoot (приложение, PostgreSQL с pgvector, Redis, Mailhog). В отличие от конфига fazer.ai, порты остаются приватными, а `enterprise/` удаляется из рабочей копии (`lexi/bin/codespace-setup`). Приложение стартует при каждом запуске codespace (`lexi/bin/codespace-start`). Вход — пользователь из `db/seeds.rb`. Неиспользуемый codespace останавливается сам через 30 минут.
 
 ## Как LEXI подключается к ядру
 
@@ -64,9 +76,12 @@ lexi/
   lib/lexi.rb                 модуль Lexi: VERSION, PLAN_NAME
   app/<слой>/lexi/…           модули Lexi::Имя для точек ядра
   app/<слой>/…                новые классы с именами upstream (SlaPolicy, CustomRole…)
+  bin/                        sparse-checkout, codespace-setup, codespace-start
   docs/decisions.md           журнал решений L-xxx
   docs/updating.md            обновление под релизы fazer.ai и Chatwoot
 spec/lexi/                    спеки LEXI (их гоняют lexi-ci и полный прогон run_foss_spec)
+spec/lexi/upstream_specs.txt  тесты upstream, которые LEXI обязан проходить (L-013)
+.devcontainer/lexi/           стенд в Codespaces (L-014)
 .github/workflows/lexi-*.yml  CI и сборка образа LEXI
 ```
 

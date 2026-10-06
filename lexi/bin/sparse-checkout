@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+# Writes the LEXI sparse-checkout patterns and applies them: everything except enterprise/
+# and spec/enterprise/, plus the upstream specs listed in spec/lexi/upstream_specs.txt.
+# Patterns go straight into .git/info/sparse-checkout: in Git Bash on Windows,
+# `git sparse-checkout set '/*'` rewrites the leading slash into a Windows path.
+set -euo pipefail
+cd "$(git rev-parse --show-toplevel)"
+
+git config core.sparseCheckout true
+{
+  printf '/*\n!/enterprise/\n!/spec/enterprise/\n'
+  if [ -f spec/lexi/upstream_specs.txt ]; then
+    grep -vE '^\s*(#|$)' spec/lexi/upstream_specs.txt | sed 's|^|/|'
+  fi
+} > "$(git rev-parse --git-path info/sparse-checkout)"
+
+git read-tree -mu HEAD
+echo "sparse checkout applied: enterprise/ excluded, $(grep -cvE '^\s*(#|$)' spec/lexi/upstream_specs.txt 2>/dev/null || echo 0) upstream specs included"

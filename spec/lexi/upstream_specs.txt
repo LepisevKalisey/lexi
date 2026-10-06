@@ -1,0 +1,5 @@
+# Upstream Chatwoot specs from spec/enterprise/ that LEXI must pass (L-013).
+# spec/enterprise/ sits outside enterprise/ and is MIT; the tests are used unchanged, as the
+# specification of each feature. One path per line, added when LEXI implements the feature.
+# lexi/bin/sparse-checkout brings exactly these files into the working tree, and lexi-ci.yml
+# runs them against LEXI with enterprise/ removed.

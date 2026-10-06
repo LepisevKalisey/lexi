@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+# Starts Rails, Sidekiq and Vite in the background each time the LEXI stand codespace starts.
+# Logs: `overmind echo` inside the codespace; stop with `overmind quit`.
+set -euo pipefail
+cd /workspace
+
+if [ -d enterprise ]; then
+  echo "enterprise/ is in the working tree; run bash lexi/bin/codespace-setup first" >&2
+  exit 1
+fi
+
+overmind start -D -f Procfile.dev

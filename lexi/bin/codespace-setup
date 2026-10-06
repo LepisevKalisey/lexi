@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+# One-time setup of the LEXI stand in GitHub Codespaces (.devcontainer/lexi).
+# Unlike .devcontainer/scripts/setup.sh it keeps the ports private and runs Chatwoot the way a
+# LEXI image does: without enterprise/.
+set -euo pipefail
+cd /workspace
+
+# Clean room: enterprise/ and spec/enterprise/ leave the working tree; the app then boots as
+# Community + LEXI, exactly like the image built by lexi-release.yml.
+bash lexi/bin/sparse-checkout
+
+cp .env.example .env
+sed -i -e '/REDIS_URL/ s/=.*/=redis:\/\/localhost:6379/' .env
+sed -i -e '/POSTGRES_HOST/ s/=.*/=localhost/' .env
+sed -i -e '/SMTP_ADDRESS/ s/=.*/=localhost/' .env
+# The browser reaches the stand through `gh codespace ports forward 3000:3000` on the laptop.
+sed -i -e '/FRONTEND_URL/ s/=.*/=http:\/\/localhost:3000/' .env
+
+pnpm install
+POSTGRES_STATEMENT_TIMEOUT=600s bundle exec rake db:chatwoot_prepare

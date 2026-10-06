@@ -87,15 +87,20 @@ jobs:
       - name: Install pnpm dependencies
         run: pnpm i
       - name: Strip enterprise code
-        run: rm -rf enterprise spec/enterprise
+        # spec/enterprise/ stays: the upstream specs listed in spec/lexi/upstream_specs.txt
+        # run against LEXI (L-013); nothing else from it is loaded.
+        run: rm -rf enterprise
       - name: Prepare database
         run: |
           bundle exec rake db:create
           bundle exec rake db:schema:load
-      - name: Run LEXI specs
+      - name: Run LEXI specs and the upstream specs LEXI must pass
         env:
           NODE_OPTIONS: --openssl-legacy-provider
-        run: bundle exec rspec spec/lexi --format progress
+        run: |
+          mapfile -t upstream < <(grep -vE '^\s*(#|$)' spec/lexi/upstream_specs.txt)
+          echo "upstream specs: ${#upstream[@]}"
+          bundle exec rspec spec/lexi "${upstream[@]}" --format progress
       - name: Upload rails log
         if: failure()
         uses: actions/upload-artifact@v4
