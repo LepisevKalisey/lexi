@@ -1,0 +1,7 @@
+# Override for the LEXI stand: the app service builds from .devcontainer/lexi/Dockerfile.
+# Paths resolve against the first compose file (.devcontainer/docker-compose.yml).
+services:
+  app:
+    build:
+      context: ..
+      dockerfile: .devcontainer/lexi/Dockerfile

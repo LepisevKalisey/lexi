@@ -16,5 +16,6 @@ sed -i -e '/SMTP_ADDRESS/ s/=.*/=localhost/' .env
 # The browser reaches the stand through `gh codespace ports forward 3000:3000` on the laptop.
 sed -i -e '/FRONTEND_URL/ s/=.*/=http:\/\/localhost:3000/' .env
 
+bundle install
 pnpm install
 POSTGRES_STATEMENT_TIMEOUT=600s bundle exec rake db:chatwoot_prepare

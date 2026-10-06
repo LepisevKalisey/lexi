@@ -4,7 +4,7 @@
   // expects the browser on http://localhost:3000 through `gh codespace ports forward`.
   "name": "LEXI stand",
   "service": "app",
-  "dockerComposeFile": "../docker-compose.yml",
+  "dockerComposeFile": ["../docker-compose.yml", "docker-compose.yml"],
   "workspaceFolder": "/workspace",
   // gh codespace ssh / logs need an SSH server; Chatwoot's image is built for VS Code only.
   "features": {
