@@ -6,6 +6,10 @@
   "service": "app",
   "dockerComposeFile": "../docker-compose.yml",
   "workspaceFolder": "/workspace",
+  // gh codespace ssh / logs need an SSH server; Chatwoot's image is built for VS Code only.
+  "features": {
+    "ghcr.io/devcontainers/features/sshd:1": { "version": "latest" }
+  },
   "forwardPorts": [3000, 3036, 8025],
   "portsAttributes": {
     "3000": { "label": "Rails Server" },
