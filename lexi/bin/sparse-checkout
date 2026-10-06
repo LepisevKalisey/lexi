@@ -6,13 +6,15 @@
 set -euo pipefail
 cd "$(git rev-parse --show-toplevel)"
 
+manifest=spec/lexi/upstream_specs.txt
+# grep exits 1 when the manifest lists nothing yet; that is not an error here
+upstream=$(grep -vE '^\s*(#|$)' "$manifest" 2>/dev/null || true)
+
 git config core.sparseCheckout true
 {
   printf '/*\n!/enterprise/\n!/spec/enterprise/\n'
-  if [ -f spec/lexi/upstream_specs.txt ]; then
-    grep -vE '^\s*(#|$)' spec/lexi/upstream_specs.txt | sed 's|^|/|'
-  fi
+  [ -z "$upstream" ] || printf '%s\n' "$upstream" | sed 's|^|/|'
 } > "$(git rev-parse --git-path info/sparse-checkout)"
 
 git read-tree -mu HEAD
-echo "sparse checkout applied: enterprise/ excluded, $(grep -cvE '^\s*(#|$)' spec/lexi/upstream_specs.txt 2>/dev/null || echo 0) upstream specs included"
+echo "sparse checkout applied: enterprise/ excluded, $(printf '%s' "$upstream" | grep -c . || true) upstream specs included"
