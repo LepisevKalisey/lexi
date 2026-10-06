@@ -34,7 +34,7 @@ git remote add chatwoot https://github.com/chatwoot/chatwoot.git
 | `config/application.rb` | загрузка `lexi/config/application.rb`: пути `lexi/app/*` и `lexi/lib`, представления, инициализаторы, переводы |
 | `tailwind.config.js` | `./lexi/app/views/**/*.erb` в `content` |
 
-**Точки подмешивания.** Около 115 классов ядра вызывают `prepend_mod_with('Имя')`. LEXI определяет модуль `Lexi::Имя` в `lexi/app/...`, загрузчик подмешивает его сам. У классов без такой точки модуль подмешивается в `lexi/config/initializers/lexi.rb` через `to_prepare`. `spec/lexi/extension_points_spec.rb` проверяет, что все подмешивания на месте.
+**Точки подмешивания.** Около 115 классов ядра вызывают `prepend_mod_with('Имя')`. LEXI определяет модуль `Lexi::Имя` в `lexi/app/...`, загрузчик подмешивает его сам. У классов без такой точки модуль подмешивается в `lexi/config/initializers/lexi.rb` через `to_prepare`. `spec/lexi/lexi_extension_points_spec.rb` проверяет, что все подмешивания на месте.
 
 **Маршруты.** Маршруты SLA, ролей, аудита, SAML и ёмкости агентов уже объявлены в ядре без условий, нет только контроллеров. LEXI кладёт контроллеры с теми же именами классов в `lexi/app/controllers/`. Маршруты, которые ядро объявляет только при `enterprise?` (звонки, мониторы, аналитика кампаний), LEXI подключит из `lexi/config/routes.rb`, когда до них дойдёт.
 
