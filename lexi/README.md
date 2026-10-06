@@ -31,7 +31,7 @@ git remote add chatwoot https://github.com/chatwoot/chatwoot.git
 ```bash
 gh codespace create -R LepisevKalisey/lexi -b main -m standardLinux32gb \
   --devcontainer-path .devcontainer/lexi/devcontainer.json
-gh codespace ports forward 3000:3000 -c <имя>   # сайт стенда — http://localhost:3000
+gh codespace ssh -c <имя> -- -N -L 3000:127.0.0.1:3000   # сайт стенда — http://localhost:3000
 ```
 
 Конфиг `.devcontainer/lexi` берёт стек Chatwoot (приложение, PostgreSQL с pgvector, Redis, Mailhog). В отличие от конфига fazer.ai, порты остаются приватными, а `enterprise/` удаляется из рабочей копии (`lexi/bin/codespace-setup`). Приложение стартует при каждом запуске codespace (`lexi/bin/codespace-start`). Вход — пользователь из `db/seeds.rb`. Неиспользуемый codespace останавливается сам через 30 минут.
@@ -40,6 +40,7 @@ gh codespace ports forward 3000:3000 -c <имя>   # сайт стенда — h
 - **Свой образ.** Образ приложения собирается из `.devcontainer/lexi/Dockerfile`, база та же — `chatwoot_codespace`. В базовом образе устарел ключ apt-источника GitHub CLI: без правки не ставится SSH-сервер, и Codespaces откатывается на запасной контейнер.
 - **Вход по SSH.** `gh codespace ssh` использует ключ `~/.ssh/codespaces.auto`. Если `gh` его не создал (так было на Windows), создайте вручную: `ssh-keygen -t ed25519 -N "" -f ~/.ssh/codespaces.auto`.
 - **Журналы.** Создание codespace — `/workspaces/.codespaces/.persistedshare/creation.log`. Ручной перезапуск настройки — `/tmp/lexi-setup.log`.
+- **Туннель, а не `ports forward`.** После перезапуска codespace `gh codespace ports forward` получает `Connection refused`, хотя приложение работает. SSH-туннель через сервер в контейнере доходит до порта всегда.
 - **Без дев-сервера Vite.** Через проброшенный порт тысячи модулей Vite грузятся минутами. Поэтому фронтенд собирается один раз (`bin/vite build` в `codespace-setup`), а запускаются только Rails и Sidekiq (`lexi/Procfile.stand`).
 
 ## Как LEXI подключается к ядру
