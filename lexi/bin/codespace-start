@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Starts Rails, Sidekiq and Vite in the background each time the LEXI stand codespace starts.
+# Starts Rails and Sidekiq in the background each time the LEXI stand codespace starts.
+# Assets are prebuilt by codespace-setup; after a frontend change run `bin/vite build` again.
 # Logs: `overmind echo` inside the codespace; stop with `overmind quit`.
 set -euo pipefail
 cd /workspace
@@ -9,4 +10,4 @@ if [ -d enterprise ]; then
   exit 1
 fi
 
-overmind start -D -f Procfile.dev
+overmind start -D -f lexi/Procfile.stand

@@ -10,10 +10,9 @@
   "features": {
     "ghcr.io/devcontainers/features/sshd:1": { "version": "latest" }
   },
-  "forwardPorts": [3000, 3036, 8025],
+  "forwardPorts": [3000, 8025],
   "portsAttributes": {
     "3000": { "label": "Rails Server" },
-    "3036": { "label": "Vite Dev Server" },
     "8025": { "label": "Mailhog UI" }
   },
   "postCreateCommand": "bash lexi/bin/codespace-setup",

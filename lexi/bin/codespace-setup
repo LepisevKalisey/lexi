@@ -19,3 +19,7 @@ sed -i -e '/FRONTEND_URL/ s/=.*/=http:\/\/localhost:3000/' .env
 bundle install
 pnpm install
 POSTGRES_STATEMENT_TIMEOUT=600s bundle exec rake db:chatwoot_prepare
+
+# Through a forwarded port the Vite dev server's thousands of module requests take minutes;
+# a one-time build lets Rails serve bundled assets from public/vite-dev instead.
+NODE_OPTIONS=--max-old-space-size=8192 bin/vite build
