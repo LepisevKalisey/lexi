@@ -14,4 +14,5 @@ fi
 # ("A server is already running").
 rm -f tmp/pids/server.pid .overmind.sock
 
-overmind start -D -f lexi/Procfile.stand
+# -d: overmind runs processes in the Procfile's directory unless told otherwise
+overmind start -D -f lexi/Procfile.stand -d /workspace
