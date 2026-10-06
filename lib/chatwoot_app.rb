@@ -38,6 +38,8 @@ module ChatwootApp
   end
 
   def self.extensions
+    return lexi_extensions if lexi?
+
     if custom?
       %w[enterprise custom]
     elsif enterprise?
@@ -45,6 +47,15 @@ module ChatwootApp
     else
       %w[]
     end
+  end
+
+  # LEXI (lexi/) is loaded after enterprise/, which LEXI builds strip, and before custom/.
+  def self.lexi?
+    @lexi ||= root.join('lexi').exist?
+  end
+
+  def self.lexi_extensions
+    [*('enterprise' if enterprise?), 'lexi', *('custom' if custom?)]
   end
 
   def self.advanced_search_allowed?

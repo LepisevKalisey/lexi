@@ -1,0 +1,7 @@
+en:
+  lexi:
+    super_admin:
+      account_features:
+        label: Features
+        enabled: 'On'
+        disabled: 'Off'

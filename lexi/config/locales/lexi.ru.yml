@@ -1,0 +1,7 @@
+ru:
+  lexi:
+    super_admin:
+      account_features:
+        label: Функции
+        enabled: Вкл.
+        disabled: Выкл.

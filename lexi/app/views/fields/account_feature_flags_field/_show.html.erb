@@ -1,0 +1,8 @@
+<ul class="grid grid-cols-2 gap-x-6 gap-y-1">
+  <% field.features.each do |name, display_name, enabled| %>
+    <li id="lexi_feature_<%= name %>" class="<%= enabled ? 'text-n-slate-12' : 'text-n-slate-10' %>">
+      <%= enabled ? t('lexi.super_admin.account_features.enabled') : t('lexi.super_admin.account_features.disabled') %>
+      · <%= display_name || name %>
+    </li>
+  <% end %>
+</ul>

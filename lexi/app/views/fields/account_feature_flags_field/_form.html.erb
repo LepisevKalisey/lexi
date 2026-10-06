@@ -1,0 +1,16 @@
+<div class="field-unit__label">
+  <%= f.label field.attribute, t('lexi.super_admin.account_features.label') %>
+</div>
+<div class="field-unit__field">
+  <% field.hidden_enabled_features.each do |name| %>
+    <%= hidden_field_tag "enabled_features[feature_#{name}]", '1', id: nil %>
+  <% end %>
+  <div class="grid grid-cols-2 gap-x-6 gap-y-1">
+    <% field.features.each do |name, display_name, enabled| %>
+      <label class="flex items-center gap-2" for="lexi_feature_<%= name %>">
+        <%= check_box_tag "enabled_features[feature_#{name}]", '1', enabled, id: "lexi_feature_#{name}" %>
+        <span><%= display_name || name %></span>
+      </label>
+    <% end %>
+  </div>
+</div>
