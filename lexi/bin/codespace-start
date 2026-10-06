@@ -10,4 +10,8 @@ if [ -d enterprise ]; then
   exit 1
 fi
 
+# A codespace stopped for idleness leaves these behind, and Rails then refuses to boot
+# ("A server is already running").
+rm -f tmp/pids/server.pid .overmind.sock
+
 overmind start -D -f lexi/Procfile.stand
