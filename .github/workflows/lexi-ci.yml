@@ -1,0 +1,104 @@
+name: LEXI CI
+
+# Fast feedback for LEXI work on any branch. The full Chatwoot suite (spec/lexi included)
+# runs in run_foss_spec.yml on every push to main.
+
+permissions:
+  contents: read
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  clean-room:
+    name: No LEXI commit touches enterprise/
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          filter: blob:none
+          sparse-checkout: |
+            lexi
+          sparse-checkout-cone-mode: true
+      - name: Fetch the fazer.ai base
+        run: git fetch --no-tags --filter=blob:none https://github.com/fazer-ai/chatwoot.git main:refs/remotes/fazer/main
+      - name: Check commits that are not in the base
+        run: |
+          set -euo pipefail
+          touched=$(git log --no-merges --name-only --format= refs/remotes/fazer/main..HEAD | grep -E '^(spec/)?enterprise/' | sort -u || true)
+          if [ -n "$touched" ]; then
+            echo "::error title=Clean room::LEXI commits must not touch enterprise/ or spec/enterprise/:"
+            echo "$touched"
+            exit 1
+          fi
+          echo "LEXI commits since the fazer.ai base: $(git rev-list --no-merges --count refs/remotes/fazer/main..HEAD); none touch enterprise/."
+
+  rubocop:
+    name: Rubocop (LEXI files)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ruby/setup-ruby@v1
+        with:
+          bundler-cache: true
+      - name: Strip enterprise code
+        run: rm -rf enterprise spec/enterprise
+      - run: bundle exec rubocop lexi spec/lexi lib/chatwoot_app.rb config/application.rb
+
+  specs:
+    name: LEXI specs
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: ''
+          POSTGRES_DB: postgres
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:alpine
+        ports:
+          - 6379:6379
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: ruby/setup-ruby@v1
+        with:
+          bundler-cache: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: 'pnpm'
+      - name: Install pnpm dependencies
+        run: pnpm i
+      - name: Strip enterprise code
+        run: rm -rf enterprise spec/enterprise
+      - name: Prepare database
+        run: |
+          bundle exec rake db:create
+          bundle exec rake db:schema:load
+      - name: Run LEXI specs
+        env:
+          NODE_OPTIONS: --openssl-legacy-provider
+        run: bundle exec rspec spec/lexi --format progress
+      - name: Upload rails log
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lexi-specs-log
+          path: log
