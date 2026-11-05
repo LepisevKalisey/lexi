@@ -3,7 +3,9 @@ require 'rails_helper'
 RSpec.describe 'LEXI SLA fields of a conversation', type: :request do
   let(:account) { create(:account) }
   let(:admin) { create(:user, account: account, role: :administrator) }
-  let(:sla_policy) { create(:sla_policy, account: account, first_response_time_threshold: 1.hour) }
+  let(:sla_policy) do
+    create(:sla_policy, account: account, first_response_time_threshold: 1.hour, next_response_time_threshold: nil, resolution_time_threshold: nil)
+  end
   let(:conversation) { create(:conversation, account: account, sla_policy: sla_policy, created_at: 2.hours.ago) }
 
   before do
