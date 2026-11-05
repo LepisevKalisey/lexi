@@ -1,6 +1,7 @@
 # Upstream Chatwoot specs from spec/enterprise/ that LEXI must pass (L-013).
 # spec/enterprise/ sits outside enterprise/ and is MIT; the tests are used unchanged, as the
-# specification of each feature. One path per line, added when LEXI implements the feature.
+# specification of each feature. One path per line, added when LEXI implements the feature;
+# path:LINE runs only the example group at that line of a file that also covers other features.
 # lexi/bin/sparse-checkout brings exactly these files into the working tree, and lexi-ci.yml
 # runs them against LEXI with enterprise/ removed. Commented paths are planned, not yet passing.
 
@@ -18,18 +19,19 @@ spec/enterprise/jobs/sla/process_applied_sla_job_spec.rb
 spec/enterprise/controllers/api/v1/accounts/sla_policies_controller_spec.rb
 spec/enterprise/controllers/api/v1/accounts/applied_slas_controller_spec.rb
 
-# Custom roles (next: branch lexi/custom-roles)
-# spec/enterprise/models/custom_role_spec.rb
-# spec/enterprise/controllers/api/v1/accounts/custom_roles_controller_spec.rb
-# spec/enterprise/services/enterprise/conversations/permission_filter_service_spec.rb
-# spec/enterprise/policies/conversation_policy_spec.rb
-# spec/enterprise/policies/contact_policy_spec.rb
-# spec/enterprise/policies/report_policy_spec.rb
-# spec/enterprise/policies/message_policy_spec.rb
-# spec/enterprise/policies/article_policy_spec.rb
-# spec/enterprise/policies/category_policy_spec.rb
-# spec/enterprise/policies/portal_policy_spec.rb
-# spec/enterprise/policies/csat_survey_response_policy_spec.rb
+# Custom roles
+spec/enterprise/models/custom_role_spec.rb
+spec/enterprise/controllers/api/v1/accounts/custom_roles_controller_spec.rb
+spec/enterprise/services/enterprise/conversations/permission_filter_service_spec.rb
+# :16 = the permissions :show? group; read_receipt? needs Captain (enterprise only)
+spec/enterprise/policies/conversation_policy_spec.rb:16
+spec/enterprise/policies/contact_policy_spec.rb
+spec/enterprise/policies/report_policy_spec.rb
+spec/enterprise/policies/message_policy_spec.rb
+spec/enterprise/policies/article_policy_spec.rb
+spec/enterprise/policies/category_policy_spec.rb
+spec/enterprise/policies/portal_policy_spec.rb
+spec/enterprise/policies/csat_survey_response_policy_spec.rb
 
 # Audit logs (after custom roles)
 # spec/enterprise/models/enterprise/audit_log_spec.rb

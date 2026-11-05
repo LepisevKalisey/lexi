@@ -1,13 +1,7 @@
 class AppliedSlaPolicy < ApplicationPolicy
-  def index?
-    @account_user.administrator?
-  end
+  include Lexi::CustomRolePermissions
 
-  def metrics?
-    @account_user.administrator?
-  end
-
-  def download?
-    @account_user.administrator?
+  %i[index? metrics? download?].each do |action|
+    define_method(action) { @account_user.administrator? || custom_role_permission?('report_manage') }
   end
 end
