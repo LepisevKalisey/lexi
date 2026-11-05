@@ -5,3 +5,13 @@ en:
         label: Features
         enabled: 'On'
         disabled: 'Off'
+    reports:
+      sla:
+        headers:
+          conversation_id: Conversation ID
+          contact_name: Contact
+          assignee_name: Assignee
+          sla_policy: SLA policy
+          missed_targets: Missed targets
+          conversation_status: Status
+          link_to_the_conversation: Link to the conversation

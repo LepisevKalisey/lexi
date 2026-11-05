@@ -1,0 +1,21 @@
+<%
+  headers = %w[conversation_id contact_name assignee_name sla_policy missed_targets conversation_status link_to_the_conversation].map do |key|
+    I18n.t("lexi.reports.sla.headers.#{key}")
+  end
+-%>
+<%= CSVSafe.generate_line(headers) -%>
+<% @applied_slas.each do |applied_sla| %>
+<% conversation = applied_sla.conversation %>
+<%
+  row = [
+    conversation.display_id,
+    conversation.contact&.name.presence,
+    conversation.assignee&.name.presence,
+    applied_sla.sla_policy.name,
+    applied_sla.sla_events.map(&:event_type).uniq.join(', '),
+    conversation.status,
+    app_account_conversation_url(account_id: Current.account.id, id: conversation.display_id)
+  ]
+-%>
+<%= CSVSafe.generate_line(row) -%>
+<% end %>

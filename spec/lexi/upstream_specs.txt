@@ -2,4 +2,35 @@
 # spec/enterprise/ sits outside enterprise/ and is MIT; the tests are used unchanged, as the
 # specification of each feature. One path per line, added when LEXI implements the feature.
 # lexi/bin/sparse-checkout brings exactly these files into the working tree, and lexi-ci.yml
-# runs them against LEXI with enterprise/ removed.
+# runs them against LEXI with enterprise/ removed. Commented paths are planned, not yet passing.
+
+# SLA
+spec/enterprise/models/sla_policy_spec.rb
+spec/enterprise/models/applied_sla_spec.rb
+spec/enterprise/models/sla_event_spec.rb
+spec/enterprise/drops/sla_policy_drop_spec.rb
+spec/enterprise/services/sla/business_hours_service_spec.rb
+spec/enterprise/services/sla/evaluate_applied_sla_service_spec.rb
+spec/enterprise/services/sla/backfill_applied_sla_completed_at_service_spec.rb
+spec/enterprise/jobs/sla/trigger_slas_for_accounts_job_spec.rb
+spec/enterprise/jobs/sla/process_account_applied_slas_job_spec.rb
+spec/enterprise/jobs/sla/process_applied_sla_job_spec.rb
+spec/enterprise/controllers/api/v1/accounts/sla_policies_controller_spec.rb
+spec/enterprise/controllers/api/v1/accounts/applied_slas_controller_spec.rb
+
+# Custom roles (next: branch lexi/custom-roles)
+# spec/enterprise/models/custom_role_spec.rb
+# spec/enterprise/controllers/api/v1/accounts/custom_roles_controller_spec.rb
+# spec/enterprise/services/enterprise/conversations/permission_filter_service_spec.rb
+# spec/enterprise/policies/conversation_policy_spec.rb
+# spec/enterprise/policies/contact_policy_spec.rb
+# spec/enterprise/policies/report_policy_spec.rb
+# spec/enterprise/policies/message_policy_spec.rb
+# spec/enterprise/policies/article_policy_spec.rb
+# spec/enterprise/policies/category_policy_spec.rb
+# spec/enterprise/policies/portal_policy_spec.rb
+# spec/enterprise/policies/csat_survey_response_policy_spec.rb
+
+# Audit logs (after custom roles)
+# spec/enterprise/models/enterprise/audit_log_spec.rb
+# spec/enterprise/controllers/api/v1/accounts/audit_logs_controller_spec.rb

@@ -5,3 +5,13 @@ ru:
         label: Функции
         enabled: Вкл.
         disabled: Выкл.
+    reports:
+      sla:
+        headers:
+          conversation_id: Номер беседы
+          contact_name: Контакт
+          assignee_name: Ответственный
+          sla_policy: Политика SLA
+          missed_targets: Нарушенные сроки
+          conversation_status: Статус
+          link_to_the_conversation: Ссылка на беседу

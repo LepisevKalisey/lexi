@@ -101,7 +101,7 @@ jobs:
         run: |
           mapfile -t upstream < <(grep -vE '^\s*(#|$)' spec/lexi/upstream_specs.txt)
           echo "upstream specs: ${#upstream[@]}"
-          bundle exec rspec spec/lexi "${upstream[@]}" --format progress
+          bundle exec rspec --require ./spec/lexi/support/upstream_aliases.rb spec/lexi "${upstream[@]}" --format progress
       - name: Upload rails log
         if: failure()
         uses: actions/upload-artifact@v4

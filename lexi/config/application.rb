@@ -8,6 +8,7 @@ config.eager_load_paths += Dir[Rails.root.join('lexi/app/*').to_s].select { |pat
 config.paths['app/views'].unshift('lexi/app/views')
 config.paths['config/initializers'] << 'lexi/config/initializers'
 config.paths['config/locales'] << 'lexi/config/locales'
+config.paths['lib/tasks'] << 'lexi/lib/tasks'
 
 # Chatwoot Hub keeps relaying push notifications to the official mobile apps; LEXI only stops
 # the usage metrics and events it would send. LEXI_TELEMETRY=true keeps upstream behaviour,
