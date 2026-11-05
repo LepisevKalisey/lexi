@@ -24,9 +24,10 @@ RSpec.describe Lexi::AuditLog do
 
   it 'does not record template syncs of a channel' do
     channel = create(:channel_twilio_sms, account: account)
-    channel.update!(content_templates: { 'templates' => [] }, content_templates_last_updated: Time.current)
 
-    expect(updates_of('Inbox').count).to eq(0)
+    expect do
+      channel.update!(content_templates: { 'templates' => [] }, content_templates_last_updated: Time.current)
+    end.not_to change(updates_of('Inbox'), :count)
   end
 
   it 'masks secret keys inside a recorded JSON value' do

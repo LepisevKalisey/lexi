@@ -34,7 +34,7 @@ RSpec.describe 'LEXI custom roles of agents', type: :request do
     get '/api/v1/profile', headers: agent.create_new_auth_token, as: :json
 
     account_payload = response.parsed_body['accounts'].find { |row| row['id'] == account.id }
-    expect(account_payload).to include('custom_role_id' => custom_role.id, 'permissions' => %w[custom_role conversation_manage])
+    expect(account_payload).to include('custom_role_id' => custom_role.id, 'permissions' => %w[conversation_manage custom_role])
     expect(account_payload['custom_role']).to include('name' => custom_role.name)
   end
 end

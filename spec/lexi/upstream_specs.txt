@@ -34,7 +34,8 @@ spec/enterprise/policies/category_policy_spec.rb
 spec/enterprise/policies/portal_policy_spec.rb
 spec/enterprise/policies/csat_survey_response_policy_spec.rb
 
-spec/enterprise/models/account_user_spec.rb
+# :6 associations, :21 permissions, :42 unread count invalidation, :65 audit log; missed-call push is voice (enterprise)
+spec/enterprise/models/account_user_spec.rb:6:21:42:65
 # :8 associations, :159 sla_policies, :291 audit logs; the rest is billing and Captain
 spec/enterprise/models/account_spec.rb:8:159:291
 

@@ -8,7 +8,7 @@ RSpec.describe AccountUser do
     it 'gives an agent with a custom role the role permissions instead of the agent role' do
       account_user = create(:account_user, account: account, role: :agent, custom_role: custom_role)
 
-      expect(account_user.permissions).to eq(%w[custom_role conversation_unassigned_manage report_manage])
+      expect(account_user.permissions).to eq(%w[conversation_unassigned_manage report_manage custom_role])
     end
 
     it 'keeps the administrator permissions for an administrator with a custom role' do

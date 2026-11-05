@@ -5,7 +5,7 @@ module Lexi::Audit::User
 
   included do
     # dependent: nil: the audit log outlives the user.
-    has_many :audits, -> { order(version: :asc) }, as: :auditable, class_name: 'Lexi::AuditLog',
-                                                    inverse_of: :auditable, dependent: nil
+    has_many :audits, -> { order(version: :asc) },
+             as: :auditable, class_name: 'Lexi::AuditLog', inverse_of: :auditable, dependent: nil
   end
 end

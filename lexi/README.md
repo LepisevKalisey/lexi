@@ -52,6 +52,11 @@ gh codespace ssh -c <имя> -- -N -L 3000:127.0.0.1:3000   # сайт стен�
 | `lib/chatwoot_app.rb` | `lexi?` и `lexi_extensions`: `extensions` возвращает `[enterprise?] lexi [custom]` |
 | `config/application.rb` | загрузка `lexi/config/application.rb`: пути `lexi/app/*` и `lexi/lib`, представления, инициализаторы, переводы |
 | `tailwind.config.js` | `./lexi/app/views/**/*.erb` в `content` |
+| `app/views/api/v1/conversations/partials/_conversation.json.jbuilder` | данные SLA беседы: партиал `lexi/api/v1/conversations/partials/conversation` |
+| `app/views/api/v1/models/_agent.json.jbuilder` | `custom_role_id` агента |
+| `app/views/api/v1/models/_user.json.jbuilder` | роль пользователя в каждом аккаунте профиля: партиал `lexi/api/v1/models/account_user` |
+
+Вставки в шаблоны — по одной строке с условием `if ChatwootApp.lexi?`, в тех местах, где ядро подключает такой же шаблон enterprise.
 
 **Точки подмешивания.** Около 115 классов ядра вызывают `prepend_mod_with('Имя')`. LEXI определяет модуль `Lexi::Имя` в `lexi/app/...`, загрузчик подмешивает его сам. У классов без такой точки модуль подмешивается в `lexi/config/initializers/lexi.rb` через `to_prepare`. `spec/lexi/lexi_extension_points_spec.rb` проверяет, что все подмешивания на месте.
 
