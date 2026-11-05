@@ -42,7 +42,8 @@ jobs:
 
   rubocop:
     name: Rubocop (LEXI files)
-    runs-on: ubuntu-latest
+    # ruby/setup-ruby has no Ruby 3.4.4 build for ubuntu-latest (26.04); fazer.ai pins 24.04 too
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: ruby/setup-ruby@v1
@@ -54,7 +55,7 @@ jobs:
 
   specs:
     name: LEXI specs
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     services:
       postgres:
         image: pgvector/pgvector:pg16
