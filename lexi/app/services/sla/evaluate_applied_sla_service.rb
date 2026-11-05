@@ -74,6 +74,6 @@ class Sla::EvaluateAppliedSlaService
   end
 
   def event_recorded?(event_type)
-    applied_sla.sla_events.where(event_type: event_type).exists?
+    applied_sla.sla_events.exists?(event_type: event_type)
   end
 end

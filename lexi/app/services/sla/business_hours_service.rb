@@ -36,7 +36,7 @@ class Sla::BusinessHoursService
 
         remaining -= available
       end
-      cursor = time_zone.local(cursor.year, cursor.month, cursor.day) + 1.day
+      cursor = local_time(cursor.to_date) + 1.day
     end
 
     raise ArgumentError, "SLA threshold #{@threshold_seconds}s exceeds #{MAX_DAYS} days of business time"
@@ -47,13 +47,14 @@ class Sla::BusinessHoursService
     working_hour = working_hours_by_day[date.wday]
     return if working_hour.nil? || working_hour.closed_all_day?
 
-    day_start = time_zone.local(date.year, date.month, date.day)
+    day_start = local_time(date)
     return [day_start, day_start + 1.day] if working_hour.open_all_day?
 
-    [
-      time_zone.local(date.year, date.month, date.day, working_hour.open_hour, working_hour.open_minutes),
-      time_zone.local(date.year, date.month, date.day, working_hour.close_hour, working_hour.close_minutes)
-    ]
+    [local_time(date, working_hour.open_hour, working_hour.open_minutes), local_time(date, working_hour.close_hour, working_hour.close_minutes)]
+  end
+
+  def local_time(date, hour = 0, minute = 0)
+    time_zone.local(date.year, date.month, date.day, hour, minute)
   end
 
   def working_hours_by_day

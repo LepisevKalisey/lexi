@@ -3,9 +3,8 @@
 # code never defines Enterprise.
 require 'rails_helper'
 
-module Enterprise
-  module Conversations; end
-end
+module Enterprise; end
+module Enterprise::Conversations; end
 
 {
   'Enterprise::Conversations::PermissionFilterService' => 'Lexi::Conversations::PermissionFilterService',
