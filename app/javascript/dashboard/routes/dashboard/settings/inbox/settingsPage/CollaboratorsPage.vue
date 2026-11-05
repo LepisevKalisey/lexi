@@ -15,6 +15,8 @@ import DropdownMenu from 'dashboard/components-next/dropdown-menu/DropdownMenu.v
 import Icon from 'dashboard/components-next/icon/Icon.vue';
 import TagInput from 'dashboard/components-next/taginput/TagInput.vue';
 import assignmentPoliciesAPI from 'dashboard/api/assignmentPolicies';
+import ReopenTeamAssigneeToggle from './ReopenTeamAssigneeToggle.vue';
+import ReopenOwnerSetting from './ReopenOwnerSetting.vue';
 import { useI18n } from 'vue-i18n';
 
 const props = defineProps({
@@ -695,6 +697,10 @@ onMounted(() => {
         :description="$t('INBOX_MGMT.ASSIGNMENT.PREVENT_TAKEOVER_SUB_TEXT')"
         @update:model-value="handleTogglePreventTakeover"
       />
+
+      <ReopenTeamAssigneeToggle :inbox="inbox" class="mt-4" />
+
+      <ReopenOwnerSetting :inbox="inbox" class="mt-4" />
     </SettingsAccordion>
 
     <woot-modal

@@ -10,6 +10,7 @@ import Avatar from 'dashboard/components-next/avatar/Avatar.vue';
 import Button from 'dashboard/components-next/button/Button.vue';
 import ContactLabels from 'dashboard/components-next/Contacts/ContactLabels/ContactLabels.vue';
 import ContactsForm from 'dashboard/components-next/Contacts/ContactsForm/ContactsForm.vue';
+import UnverifiedContactDetails from 'dashboard/components-next/Contacts/UnverifiedContactDetails.vue';
 import ConfirmContactDeleteDialog from 'dashboard/components-next/Contacts/ContactsForm/ConfirmContactDeleteDialog.vue';
 import Policy from 'dashboard/components/policy.vue';
 
@@ -66,6 +67,17 @@ const avatarSrc = computed(() => {
   return avatarUrl.value ? avatarUrl.value : contactData.value?.thumbnail;
 });
 
+// A claim settled from the unverified details: write only what changed into the local copy and into
+// the form's own state, which may hold edits not yet emitted (the form emits only once valid).
+const applySettledClaim = ({ changes, claimKey }) => {
+  Object.assign(contactData.value, changes);
+  Object.assign(contactsFormRef.value.state, changes);
+  contactData.value.additionalAttributes = {
+    ...contactData.value.additionalAttributes,
+    [claimKey]: null,
+  };
+};
+
 const handleFormUpdate = updatedData => {
   Object.assign(contactData.value, updatedData);
 };
@@ -73,7 +85,14 @@ const handleFormUpdate = updatedData => {
 const updateContact = async () => {
   try {
     const { customAttributes, ...basicContactData } = contactData.value;
-    await store.dispatch('contacts/update', basicContactData);
+    await store.dispatch('contacts/update', {
+      ...basicContactData,
+      resolveLegacyCompany: true,
+    });
+    Object.assign(
+      contactData.value,
+      store.getters['contacts/getContactById'](props.selectedContact.id)
+    );
     await store.dispatch(
       'contacts/fetchContactableInbox',
       props.selectedContact.id
@@ -180,6 +199,11 @@ const handleAvatarDelete = async () => {
       <ContactLabels :contact-id="selectedContact?.id" />
     </div>
     <div class="flex flex-col items-start gap-6">
+      <UnverifiedContactDetails
+        v-if="selectedContact"
+        :contact="selectedContact"
+        @settled="applySettledClaim"
+      />
       <ContactsForm
         ref="contactsFormRef"
         :contact-data="contactData"

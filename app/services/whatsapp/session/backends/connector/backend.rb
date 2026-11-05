@@ -47,6 +47,9 @@ class Whatsapp::Session::Backends::Connector::Backend < Whatsapp::Session::Backe
   # later is a typing bubble for something nobody is typing.
   MOMENTARY_TIMEOUT = 30
 
+  # Under the 15 s a request may run: see `check_numbers`.
+  NUMBER_CHECK_TIMEOUT = 5
+
   # These are still right whenever they land, so the only reason to bound them is the
   # executor, and the ceiling has to clear the longest command that can legitimately be
   # ahead of them on the same queue: a send carrying a file. A queue holding several of
@@ -71,6 +74,9 @@ class Whatsapp::Session::Backends::Connector::Backend < Whatsapp::Session::Backe
   # down answers at once with a refusal. Everything the connector still owes itself after
   # the unlink runs outside this ceiling, by contract.
   TEARDOWN_RUNTIME = 30
+
+  # A hang-up answered by WhatsApp at once; what this bounds is one parked on a socket.
+  CALL_HANGUP_RUNTIME = 30
 
   class << self
     def provider_key
@@ -143,7 +149,16 @@ class Whatsapp::Session::Backends::Connector::Backend < Whatsapp::Session::Backe
     client.publish(commands::SessionDisconnect.new, max_runtime: TEARDOWN_RUNTIME)
   end
 
+  # The operator's Disconnect since it stopped deleting the session (fazer-ai/chatwoot#852),
+  # so it reaches the places the teardown below does, by the same means. A connector reads
+  # `wa:cmd:<sid>` only while it runs the session, and a session nobody owns -- handed back,
+  # or waiting out a resume backoff -- would leave the logout there undelivered: the wake, on
+  # the control stream, has some instance adopt it, and `disconnected` has it stop there
+  # instead of dialling. And the note is what lets a logout the connector never attempted be
+  # sent again while the inbox still exists; connecting withdraws it, as it does a teardown.
   def logout
+    Whatsapp::Session::TeardownRetry.requested(session_id)
+    client.control(commands::SessionWake.new(desired: 'disconnected'))
     client.publish(commands::SessionLogout.new, max_runtime: TEARDOWN_RUNTIME)
   end
 
@@ -294,13 +309,51 @@ class Whatsapp::Session::Backends::Connector::Backend < Whatsapp::Session::Backe
     client.publish(command, timeout: DEFERRABLE_TIMEOUT)
   end
 
-  def check_numbers(command)
-    Array(client.call(command)).map { |check| model::NumberCheck.from_h(check) }
+  # --- calls -----------------------------------------------------------------------
+
+  # An answer that lands after the caller gave up is not an answer, and a refusal that
+  # lands after the call stopped ringing refuses nothing, so both are momentary.
+  def accept_call(command)
+    client.publish(command, timeout: MOMENTARY_TIMEOUT)
+  end
+
+  def reject_call(command)
+    client.publish(command, timeout: MOMENTARY_TIMEOUT)
+  end
+
+  # A hang-up is still right whenever it lands, and the connector drops one for a call
+  # that already ended. So it takes the runtime ceiling, like the teardown: a deadline would
+  # throw away, unrun, a hang-up queued behind long media sends, after the call was already
+  # closed here, and nothing would send it again.
+  def terminate_call(command)
+    client.publish(command, max_runtime: CALL_HANGUP_RUNTIME)
+  end
+
+  # Rings somebody's phone, which a redelivery must not do twice: the key is what makes
+  # the connector answer a resend with the call it already placed.
+  def start_call(command, idempotency_key:, timeout: Whatsapp::Connector::Client::RPC_TIMEOUT)
+    result = client.call(command, idempotency_key: idempotency_key, timeout: timeout)
+    call_id = result.is_a?(Hash) ? result['call_id'] : nil
+    raise Whatsapp::Session::Errors::InvalidPayload, 'call.start answered without a call_id' if call_id.blank?
+
+    call_id
+  end
+
+  # Asked from inside a request, whose caller falls back to the typed number when the
+  # check fails, so the check gives up long before the request does (#838). On the RPC
+  # default it waited 20 s, past the request's own limit, and the fallback never ran. A
+  # dial asks inside its own budget and says how much of it the check may have.
+  def check_numbers(command, timeout: NUMBER_CHECK_TIMEOUT)
+    Array(client.call(command, timeout: timeout)).map { |check| model::NumberCheck.from_h(check) }
   end
 
   def profile_picture_url(command)
     result = client.call(command)
     result.is_a?(Hash) ? result['url'] : result
+  end
+
+  def resolve_contact(command, timeout: Whatsapp::Connector::Client::RPC_TIMEOUT)
+    model::Party.from_h(client.call(command, timeout: timeout))
   end
 
   # --- groups --------------------------------------------------------------------

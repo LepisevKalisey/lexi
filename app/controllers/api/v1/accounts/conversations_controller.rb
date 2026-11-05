@@ -3,9 +3,10 @@ class Api::V1::Accounts::ConversationsController < Api::V1::Accounts::BaseContro
   include DateRangeHelper
   include HmacConcern
   include ConversationCustomAttributesConcern
+  include ConversationAssignmentTargetsConcern
 
   before_action :conversation, except: [:index, :meta, :sync, :search, :create, :filter, :presence_subscribe_bulk, :pins, :unpin]
-  before_action :inbox, :contact, :contact_inbox, only: [:create]
+  before_action :validate_assignment_targets, :inbox, :contact, :contact_inbox, only: [:create]
 
   ATTACHMENT_RESULTS_PER_PAGE = 100
   # One page of conversations, the same unit the index endpoint serializes at. The partial does
@@ -297,6 +298,15 @@ class Api::V1::Accounts::ConversationsController < Api::V1::Accounts::BaseContro
     Whatsapp::Session::HistoryBackfill.open!(channel)
     Whatsapp::Session::ConversationHistoryJob.perform_later(@conversation)
     head :ok
+  end
+
+  # Asked by the dashboard when it opens a conversation whose number was flagged as having no
+  # WhatsApp. Only a flag older than the recheck window goes back to the provider, so opening
+  # the same conversation again and again costs one lookup per window, not one per open. The
+  # answer arrives as a conversation update.
+  def recheck_whatsapp_number
+    Whatsapp::NumberRecheckJob.perform_later(@conversation) if @conversation.contact_inbox&.whatsapp_missing_recheck_due?
+    head :accepted
   end
 
   def destroy

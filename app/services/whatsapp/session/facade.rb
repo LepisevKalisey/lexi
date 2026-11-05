@@ -11,6 +11,7 @@ class Whatsapp::Session::Facade
   include Whatsapp::Session::Facade::Groups
   include Whatsapp::Session::Facade::History
   include Whatsapp::Session::Facade::Presence
+  include Whatsapp::Session::Facade::Calls
 
   attr_reader :channel, :backend, :provider, :instance
 
@@ -106,6 +107,16 @@ class Whatsapp::Session::Facade
     backend.disconnect
   end
 
+  # The operator's Disconnect, which keeps the inbox and therefore its session id. A logout
+  # and not the teardown above: deleting the session has the connector forget it, epoch
+  # counter included, so the pairing after it would start again at epoch 1 under the epoch
+  # and position Chatwoot kept for the old session, and every event of it, the QR first,
+  # would be dropped (fazer-ai/chatwoot#852). The contract keeps the counter across a logout
+  # for exactly this: the account can be paired again under the same id.
+  def logout_channel_provider
+    backend.logout
+  end
+
   # Session providers pair a real phone: there is no template catalog to sync and no
   # template to send.
   def sync_templates
@@ -194,7 +205,10 @@ class Whatsapp::Session::Facade
   # the digits off this JID and write them to `contacts.phone_number` (and to the contact
   # inbox's source id), so answering with a LID renames the contact after an opaque
   # internal id and then addresses it at `<lid>@s.whatsapp.net`, which reaches nobody.
-  def on_whatsapp(recipient_id)
+  #
+  # Takes `deadline:` like Baileys; each backend's number check already has a short ceiling of
+  # its own.
+  def on_whatsapp(recipient_id, **)
     digits = recipient_id.to_s.split('@').first.to_s.delete('+')
     check = backend.check_numbers(model::Commands::ContactCheck.new(phones: [digits])).first
     return { 'jid' => "#{digits}@s.whatsapp.net", 'exists' => false } if check.blank?
@@ -229,11 +243,19 @@ class Whatsapp::Session::Facade
     state
   end
 
-  # An object in the contract, not a flag: the field says how calls are handled, and the
-  # only policy this layer has is to reject them. Omitted when the backend does not do
-  # calls at all, because `false` is not a value the schema accepts either.
+  # An object in the contract, not a flag: the field says how calls are handled. Omitted
+  # when the backend does not do calls at all, because `false` is not a value the schema
+  # accepts either, and omitted on an inbox without calling, so the phone rings as it
+  # always did (#850).
+  #
+  # An inbox with calling on asks the connector to carry the voice. Never with
+  # `auto_reject`: the connector reads that as "no calls on this session", the placed ones
+  # included, and a refusal from a linked device ends the call on every device of the
+  # account, the phone included.
   def call_policy
-    { 'auto_reject' => true } if capability?('calls')
+    return unless capability?('calls')
+
+    { 'answer' => true } if channel.voice_enabled?
   end
 
   # What the inbox names as its way out, in the shape the connector takes. Nothing is a

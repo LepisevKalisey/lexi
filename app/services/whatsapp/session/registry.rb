@@ -42,10 +42,16 @@ module Whatsapp::Session::Registry # rubocop:disable Metrics/ModuleLength
       # so what the declaration bought was a promise on the inbox payload that the next
       # caller would have read as an answer.
       #
-      # `calls` is what puts `{auto_reject: true}` on the connect and what lets the
-      # offer through the dispatcher. It does not promise a call can be answered: the
-      # contract has no command for that, and neither does whatsmeow. What it promises
-      # is that a call reaches the inbox, which is what an agent can act on.
+      # `calls` is what lets the offer through the dispatcher. It does not promise a call
+      # can be answered here, and it puts no policy on the connect: the call rings on the
+      # operator's phone, and the inbox shows that it happened. Asking the connector to
+      # refuse would end the call on every device of the account, the phone included
+      # (fazer-ai/chatwoot#850).
+      #
+      # `voice_calls` is the other half: the connector carrying a call's voice to the
+      # agent's browser, which it does once the inbox turns calling on (`calls.answer` on
+      # the connect). It is what lets the inbox's calling settings and the call commands
+      # reach this provider, the way the Calling API reaches a Cloud inbox.
       #
       # `history_sync` is the phone's history, published by the connector as `history.sync`
       # and asked for with `history.request`. The field decides only whether the archive is
@@ -54,7 +60,8 @@ module Whatsapp::Session::Registry # rubocop:disable Metrics/ModuleLength
       capabilities: %w[
         qr_pairing code_pairing echo_by_reserved_id edit revoke reactions typing presence
         presence_subscribe read_receipts mark_unread check_number profile_picture groups
-        group_management group_admin group_invites group_join_requests media_download calls history_sync
+        group_management group_admin group_invites group_join_requests media_download calls voice_calls
+        history_sync
       ],
       fields: [PROXY_URL, MARK_AS_READ, PRESENCE_SUBSCRIBE, HISTORY_SYNC]
     ),

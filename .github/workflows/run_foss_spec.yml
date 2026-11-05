@@ -123,6 +123,16 @@ jobs:
                 *) continue ;;
               esac
             done <<<"$changed"
+            # Specs that scan the source tree (request ceilings, dispatch and writer fences) are
+            # named after nothing they guard, so the filename map above never reaches them and a
+            # PR that breaks one ships green; #878 did. Any Ruby change under app/ or lib/ takes
+            # them all, found by the idioms they read the tree with rather than by a list, so a
+            # new fence written the same way joins without touching this file.
+            fence_idioms="Dir\.glob\(Rails\.root|Rails\.root\.join\(guarded_source\)|Rails\.root\.join\('app/[^']*\.rb'\)\.read|File\.read\(Rails\.root\.join\('app"
+            if grep -qE "^[a-z]+${TAB}(app|lib)/.*\.rb$" <<<"$changed"; then
+              fences=$(git grep -lE "$fence_idioms" -- 'spec/*_spec.rb' ':!spec/enterprise' || true)
+              specs+="$fences"$'\n'
+            fi
             specs=$(sort -u <<<"$specs" | grep -v '^$' || true)
             echo "::notice title=CE spec::affected specs from diff against $INPUT_BASE"
           fi
@@ -146,7 +156,7 @@ jobs:
 
   # Separate linting jobs for faster feedback
   lint-backend:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: ruby/setup-ruby@v1
@@ -156,7 +166,7 @@ jobs:
         run: bundle exec rubocop --parallel
 
   security-scan:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: ruby/setup-ruby@v1
@@ -208,7 +218,7 @@ jobs:
   backend-tests:
     needs: plan
     if: needs.plan.outputs.run_backend == 'true'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
       matrix:

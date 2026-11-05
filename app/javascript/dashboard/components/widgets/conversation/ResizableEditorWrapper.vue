@@ -10,24 +10,34 @@ import {
 import { useEventListener } from '@vueuse/core';
 import { emitter } from 'shared/helpers/mitt';
 import { BUS_EVENTS } from 'shared/constants/busEvents';
+import { LocalStorage } from 'shared/helpers/localStorage';
 
 const props = defineProps({
   containerHeight: { type: Number, default: 0 },
 });
+
+const emit = defineEmits(['collapse']);
 
 const DEFAULT_HEIGHT = 120;
 const MIN_HEIGHT = 80;
 const MIN_MESSAGES_HEIGHT = 200;
 const EXPAND_RATIO = 0.5;
 const RESET_DELAY_MS = 120;
+const COLLAPSE_DISTANCE = 48;
+// The height the agent chose, kept per browser since it depends on the window
+const PREFERRED_HEIGHT_KEY = 'replyEditorHeight';
 
 const wrapperRef = useTemplateRef('wrapperRef');
 const surroundingHeight = ref(0);
-const editorHeight = ref(DEFAULT_HEIGHT);
+const preferredHeight = ref(
+  Number(LocalStorage.get(PREFERRED_HEIGHT_KEY)) || DEFAULT_HEIGHT
+);
+const editorHeight = ref(preferredHeight.value);
 const isResizing = ref(false);
 const startY = ref(0);
 const startHeight = ref(0);
 const requestedHeight = ref(0);
+const collapseProgress = ref(0);
 let resetTimeoutId = null;
 
 const clamp = (val, min, max) => Math.min(Math.max(val, min), max);
@@ -50,6 +60,11 @@ const sizeBounds = computed(() => {
 const clampToBounds = val =>
   clamp(val, sizeBounds.value.min, sizeBounds.value.max);
 
+const savePreferredHeight = height => {
+  preferredHeight.value = height;
+  LocalStorage.set(PREFERRED_HEIGHT_KEY, height);
+};
+
 // The dragged height always comes back, content can only ask the editor to grow
 const appliedHeight = computed(() => {
   const requested = requestedHeight.value
@@ -58,12 +73,17 @@ const appliedHeight = computed(() => {
   return clampToBounds(Math.max(requested, editorHeight.value));
 });
 
-// Measure height of elements surrounding the editor (top panel, email fields, bottom panel)
+// Measure height of elements surrounding the editor (top panel, email fields, bottom panel).
+// The editor's own rendered height, not the applied one: a signature preview may stretch it.
 const measureSurroundingHeight = () => {
   if (wrapperRef.value) {
+    const editor = wrapperRef.value.querySelector(
+      '.resizable-editor-split, .resizable-editor-body'
+    );
     surroundingHeight.value = Math.max(
       0,
-      wrapperRef.value.offsetHeight - appliedHeight.value
+      wrapperRef.value.offsetHeight -
+        (editor?.offsetHeight ?? appliedHeight.value)
     );
   }
 };
@@ -94,23 +114,38 @@ const onResizeStart = event => {
   });
 };
 
-const onResizeMove = event => {
-  if (!isResizing.value) return;
-  if (event.touches) event.preventDefault();
-  editorHeight.value = clampToBounds(
-    startHeight.value + startY.value - getClientY(event)
-  );
-};
-
 const onResizeEnd = () => {
   if (!isResizing.value) return;
   isResizing.value = false;
+  collapseProgress.value = 0;
   clearDragStyles();
+  savePreferredHeight(editorHeight.value);
+};
+
+const collapseEditor = () => {
+  isResizing.value = false;
+  collapseProgress.value = 0;
+  clearDragStyles();
+  editorHeight.value = preferredHeight.value;
+  emit('collapse');
+};
+
+const onResizeMove = event => {
+  if (!isResizing.value) return;
+  if (event.touches) event.preventDefault();
+  const draggedHeight = startHeight.value + startY.value - getClientY(event);
+  editorHeight.value = clampToBounds(draggedHeight);
+  collapseProgress.value = clamp(
+    (sizeBounds.value.min - draggedHeight) / COLLAPSE_DISTANCE,
+    0,
+    1
+  );
+  if (collapseProgress.value === 1) collapseEditor();
 };
 
 const resetEditorHeight = () => {
   requestedHeight.value = 0;
-  editorHeight.value = sizeBounds.value.default;
+  editorHeight.value = preferredHeight.value;
 };
 
 const toggleEditorExpand = () => {
@@ -121,6 +156,7 @@ const toggleEditorExpand = () => {
   // If expanded is too close to default, use max so the toggle is always noticeable
   const target = expanded - defaultHeight < 100 ? max : expanded;
   editorHeight.value = isExpanded ? defaultHeight : target;
+  savePreferredHeight(editorHeight.value);
 };
 
 const handleMessageSent = () => {
@@ -162,6 +198,7 @@ defineExpose({ toggleEditorExpand, resetEditorHeight });
       '--editor-height-transition': isResizing
         ? '0s'
         : '200ms cubic-bezier(0.4, 0, 0.2, 1)',
+      '--editor-collapse-progress': collapseProgress,
     }"
   >
     <div
@@ -172,10 +209,22 @@ defineExpose({ toggleEditorExpand, resetEditorHeight });
     >
       <div
         class="w-8 h-0.5 mt-1 rounded-full bg-n-slate-6 group-hover:bg-n-slate-8 transition-all duration-200 motion-safe:group-hover:animate-bounce"
-        :class="{ 'bg-n-slate-8 animate-bounce': isResizing }"
+        :class="{
+          'bg-n-slate-8 animate-bounce': isResizing,
+          '!bg-n-brand w-12': collapseProgress > 0,
+        }"
       />
     </div>
-    <slot />
+    <div
+      class="transition-[opacity,transform] ease-out"
+      :class="[
+        isResizing ? 'duration-0' : 'duration-200',
+        collapseProgress > 0 &&
+          'opacity-[calc(1_-_var(--editor-collapse-progress)_*_0.6)] translate-y-[calc(var(--editor-collapse-progress)_*_0.75rem)]',
+      ]"
+    >
+      <slot />
+    </div>
   </div>
 </template>
 
@@ -192,6 +241,34 @@ defineExpose({ toggleEditorExpand, resetEditorHeight });
     transition:
       height var(--editor-height-transition),
       opacity var(--editor-height-transition);
+  }
+
+  // Shares the resizable height between the editor and its footer-slot
+  // content (e.g. the quoted email preview); the 3rem floor keeps the
+  // editor usable at the minimum allowed height.
+  .resizable-editor-split {
+    @apply flex min-h-0 flex-col;
+
+    height: clamp(
+      var(--editor-min-allowed, 5rem),
+      var(--editor-height, 5rem),
+      var(--editor-max-allowed, 7.5rem)
+    );
+    transition: height var(--editor-height-transition);
+
+    .editor-mount {
+      @apply flex min-h-[3rem] flex-1 flex-col;
+    }
+
+    .ProseMirror-menubar-wrapper {
+      @apply flex min-h-0 flex-1 flex-col;
+    }
+
+    .resizable-editor-body {
+      @apply min-h-0 flex-1;
+
+      height: auto;
+    }
   }
 }
 </style>

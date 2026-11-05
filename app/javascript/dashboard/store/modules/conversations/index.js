@@ -25,6 +25,7 @@ const state = {
   syncConversationsMessages: {},
   conversationFilters: {},
   copilotAssistant: {},
+  autoTranslating: {},
 };
 
 const getConversationById = _state => conversationId => {
@@ -318,6 +319,13 @@ export const mutations = {
     }
   },
 
+  [types.SET_AUTO_TRANSLATING](_state, { locale, messageIds, translating }) {
+    _state.autoTranslating[locale] ??= {};
+    messageIds.forEach(id => {
+      _state.autoTranslating[locale][id] = translating;
+    });
+  },
+
   [types.ADD_CONVERSATION](_state, conversation) {
     const exists = _state.allConversations.some(c => c.id === conversation.id);
     if (!exists) {
@@ -364,10 +372,12 @@ export const mutations = {
       // unconditionally — heuristics on `last_non_activity_message` miss the
       // case where newer non-reaction messages exist after the reacted target.
       // `history_exhausted` only drops the "load older messages" control at the
-      // top of the thread, where the agent who asked is reading.
+      // top of the thread, where the agent who asked is reading. `whatsapp_missing` only
+      // moves the no-WhatsApp banner.
       const isReactionUpdate = [
         'reaction_toggle',
         'history_exhausted',
+        'whatsapp_missing',
       ].includes(eventMetadata?.source);
       if (_state.selectedChatId === conversation.id && !isReactionUpdate) {
         emitter.emit(BUS_EVENTS.SCROLL_TO_MESSAGE);

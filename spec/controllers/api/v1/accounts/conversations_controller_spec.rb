@@ -692,6 +692,32 @@ RSpec.describe 'Conversations API', type: :request do
           expect(response_data[:meta][:assignee][:name]).to eq(agent.name)
           expect(response_data[:meta][:team][:name]).to eq(team.name)
         end
+
+        it 'does not create a conversation with an assignee from another account' do
+          other_user = create(:user, account: create(:account))
+
+          expect do
+            post "/api/v1/accounts/#{account.id}/conversations",
+                 headers: agent.create_new_auth_token,
+                 params: { source_id: contact_inbox.source_id, assignee_id: other_user.id },
+                 as: :json
+          end.not_to change(Conversation, :count)
+
+          expect(response).to have_http_status(:unprocessable_entity)
+        end
+
+        it 'does not create a conversation with a team from another account' do
+          other_team = create(:team, account: create(:account))
+
+          expect do
+            post "/api/v1/accounts/#{account.id}/conversations",
+                 headers: agent.create_new_auth_token,
+                 params: { source_id: contact_inbox.source_id, team_id: other_team.id },
+                 as: :json
+          end.not_to change(Conversation, :count)
+
+          expect(response).to have_http_status(:unprocessable_entity)
+        end
       end
     end
 
@@ -2015,6 +2041,83 @@ RSpec.describe 'Conversations API', type: :request do
              headers: agent.create_new_auth_token, as: :json
 
         expect(response).to have_http_status(:unprocessable_entity)
+      end
+    end
+  end
+
+  # A number with no WhatsApp account takes the server's single check and then reaches nobody,
+  # so a conversation started against one has to say so (fazer-ai/chatwoot#877).
+  describe 'WhatsApp number with no account' do
+    let(:channel) do
+      create(:channel_whatsapp, account: account, provider: 'baileys', validate_provider_config: false, sync_templates: false,
+                                provider_connection: { 'connection' => 'open' })
+    end
+    let(:agent) { create(:user, account: account, role: :agent) }
+    let(:contact) { create(:contact, account: account, phone_number: '+558588246590') }
+
+    before { create(:inbox_member, user: agent, inbox: channel.inbox) }
+
+    it 'flags the conversation an agent starts against a number WhatsApp does not know' do
+      allow_any_instance_of(Channel::Whatsapp).to receive(:on_whatsapp) # rubocop:disable RSpec/AnyInstance
+        .and_return({ 'jid' => '558588246590@s.whatsapp.net', 'exists' => false })
+
+      freeze_time do
+        post "/api/v1/accounts/#{account.id}/conversations",
+             params: { inbox_id: channel.inbox.id, contact_id: contact.id, source_id: '558588246590', message: { content: 'Boa tarde' } },
+             headers: agent.create_new_auth_token, as: :json
+
+        expect(response).to have_http_status(:success)
+        expect(response.parsed_body['whatsapp_missing_checked_at']).to eq(Time.current.to_i)
+      end
+    end
+
+    it 'leaves the field empty when WhatsApp knows the number' do
+      allow_any_instance_of(Channel::Whatsapp).to receive(:on_whatsapp) # rubocop:disable RSpec/AnyInstance
+        .and_return({ 'jid' => '558588246590@s.whatsapp.net', 'exists' => true })
+
+      post "/api/v1/accounts/#{account.id}/conversations",
+           params: { inbox_id: channel.inbox.id, contact_id: contact.id, source_id: '558588246590', message: { content: 'Boa tarde' } },
+           headers: agent.create_new_auth_token, as: :json
+
+      expect(response).to have_http_status(:success)
+      expect(response.parsed_body).to include('whatsapp_missing_checked_at' => nil)
+    end
+
+    describe 'POST /api/v1/accounts/{account.id}/conversations/:id/recheck_whatsapp_number' do
+      let(:contact_inbox) { create(:contact_inbox, contact: contact, inbox: channel.inbox, source_id: '558588246590') }
+      let(:conversation) { create(:conversation, account: account, inbox: channel.inbox, contact: contact, contact_inbox: contact_inbox) }
+      let(:url) { "/api/v1/accounts/#{account.id}/conversations/#{conversation.display_id}/recheck_whatsapp_number" }
+
+      it 'returns unauthorized to an agent outside the inbox' do
+        outsider = create(:user, account: account, role: :agent)
+        contact_inbox.update!(whatsapp_missing_checked_at: 2.days.ago)
+
+        expect do
+          post url, headers: outsider.create_new_auth_token, as: :json
+        end.not_to have_enqueued_job(Whatsapp::NumberRecheckJob)
+
+        expect(response).to have_http_status(:unauthorized)
+      end
+
+      it 'asks again once the flag is older than the recheck window' do
+        contact_inbox.update!(whatsapp_missing_checked_at: 2.days.ago)
+
+        expect do
+          post url, headers: agent.create_new_auth_token, as: :json
+        end.to have_enqueued_job(Whatsapp::NumberRecheckJob).with(conversation)
+
+        expect(response).to have_http_status(:accepted)
+      end
+
+      # Every open of a flagged conversation calls this; within the window it must cost nothing.
+      it 'does not ask again inside the recheck window' do
+        contact_inbox.update!(whatsapp_missing_checked_at: 10.minutes.ago)
+
+        expect do
+          post url, headers: agent.create_new_auth_token, as: :json
+        end.not_to have_enqueued_job(Whatsapp::NumberRecheckJob)
+
+        expect(response).to have_http_status(:accepted)
       end
     end
   end

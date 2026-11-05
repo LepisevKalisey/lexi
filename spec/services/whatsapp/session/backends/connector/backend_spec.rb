@@ -26,7 +26,8 @@ RSpec.describe Whatsapp::Session::Backends::Connector::Backend do
       'group.info' => { 'group' => { 'kind' => 'group', 'id' => '120363040000000001' }, 'subject' => 'Equipe' },
       'group.invite.get' => { 'code' => 'FAKEINVITE0001' },
       'group.participants.update' => [{ 'address' => { 'kind' => 'phone', 'id' => '5541999990000' }, 'status' => 'success' }],
-      'group.join_requests.list' => []
+      'group.join_requests.list' => [],
+      'call.start' => { 'call_id' => 'CALLOUT1' }
     }
   end
 
@@ -108,6 +109,24 @@ RSpec.describe Whatsapp::Session::Backends::Connector::Backend do
 
   it 'declares exactly what the registry advertises for the provider' do
     expect(described_class.capabilities).to eq(Whatsapp::Session::Registry.descriptor('native').capabilities)
+  end
+
+  # A number check runs inside a request (opening a conversation, the inbox's number
+  # lookup), and the caller already treats a failed check as "keep the typed number". Left
+  # on the RPC default it waited 20 s for a session that does not answer, longer than the
+  # request itself may run, so the request died with a 500 before the fallback could run.
+  it 'gives a number check a ceiling well inside a request' do
+    backend.check_numbers(model::Commands::ContactCheck.new(phones: ['5541999990000']))
+
+    expect(client).to have_received(:call)
+      .with(an_instance_of(model::Commands::ContactCheck), timeout: be <= 5)
+  end
+
+  # A dial asks inside its own budget and hands over what the check may have of it.
+  it 'gives a number check the time its caller names' do
+    backend.check_numbers(model::Commands::ContactCheck.new(phones: ['5541999990000']), timeout: 3)
+
+    expect(client).to have_received(:call).with(an_instance_of(model::Commands::ContactCheck), timeout: 3)
   end
 
   # The connector answers `history.request` with `null` once the phone was asked, and
@@ -216,6 +235,32 @@ RSpec.describe Whatsapp::Session::Backends::Connector::Backend do
       backend.connect(model::Commands::SessionConnect.new(pairing: 'qr'))
 
       expect(Whatsapp::Session::TeardownRetry.wanted?(session_id)).to be(false)
+    end
+  end
+
+  # A logout is the operator's Disconnect too since it stopped deleting the session
+  # (fazer-ai/chatwoot#852), so it has to reach the same places the teardown did.
+  describe 'a logout' do
+    after { Whatsapp::Session::TeardownRetry.withdrawn(session_id) }
+
+    # A connector reads a session's own stream only while it runs the session, so a logout
+    # for one nobody owns -- handed back, or waiting out a resume backoff -- would sit there
+    # undelivered. The wake has some instance adopt it, and with `disconnected` stop there.
+    it 'has the session adopted, without connecting it, before it asks for the logout' do
+      backend.logout
+
+      expect(client).to have_received(:control)
+        .with(have_attributes(class: model::Commands::SessionWake, desired: 'disconnected')).ordered
+      expect(client).to have_received(:publish)
+        .with(an_instance_of(model::Commands::SessionLogout), max_runtime: described_class::TEARDOWN_RUNTIME).ordered
+    end
+
+    # One the connector never attempted is sent again only while somebody still wants it,
+    # and an inbox that is still here wants it only if this note says so.
+    it 'leaves the note a retry of it checks' do
+      backend.logout
+
+      expect(Whatsapp::Session::TeardownRetry.wanted?(session_id)).to be(true)
     end
   end
 
@@ -507,5 +552,41 @@ RSpec.describe Whatsapp::Session::Backends::Connector::Backend do
     # And never the other one, which is the whole reason both fields exist.
     expect(client).not_to have_received(:publish).with(anything, hash_including(:timeout))
     expect(client).not_to have_received(:control).with(anything, hash_including(:timeout))
+  end
+
+  describe 'calls' do
+    let(:caller_address) { model::Address.phone('5541999990000') }
+
+    # An answer or a refusal that lands after the call stopped ringing does nothing useful,
+    # so both carry the deadline a momentary command does; a hang-up is right whenever it
+    # lands, so it is bounded only once it runs.
+    it 'publishes the answer, the refusal and the hang-up with the ceiling each deserves' do
+      backend.accept_call(model::Commands::CallAccept.new(call_id: 'CALLX3', sdp: 'SDP-ANSWER-BROWSER'))
+      backend.reject_call(model::Commands::CallReject.new(call_id: 'CALLX4', from: caller_address))
+      backend.terminate_call(model::Commands::CallTerminate.new(call_id: 'CALLX6'))
+
+      expect(client).to have_received(:publish)
+        .with(have_attributes(call_id: 'CALLX3', sdp: 'SDP-ANSWER-BROWSER'), timeout: described_class::MOMENTARY_TIMEOUT)
+      expect(client).to have_received(:publish)
+        .with(have_attributes(call_id: 'CALLX4', from: caller_address), timeout: described_class::MOMENTARY_TIMEOUT)
+      expect(client).to have_received(:publish)
+        .with(an_instance_of(model::Commands::CallTerminate), max_runtime: described_class::CALL_HANGUP_RUNTIME)
+    end
+
+    it 'places a call under the key it was given and answers the call id the connector chose' do
+      command = model::Commands::CallStart.new(to: caller_address, sdp: 'SDP-OFFER')
+
+      expect(backend.start_call(command, idempotency_key: 'call:abc')).to eq('CALLOUT1')
+      expect(client).to have_received(:call).with(command, idempotency_key: 'call:abc', timeout: Whatsapp::Connector::Client::RPC_TIMEOUT)
+    end
+
+    # A call id is what every later event is matched by, so a result without one is a
+    # connector bug to surface, not an id to make up.
+    it 'refuses a placed call the connector answered without an id' do
+      results['call.start'] = {}
+
+      expect { backend.start_call(model::Commands::CallStart.new(to: caller_address, sdp: 'x'), idempotency_key: 'k') }
+        .to raise_error(Whatsapp::Session::Errors::InvalidPayload, /without a call_id/)
+    end
   end
 end
