@@ -16,5 +16,8 @@ git config core.sparseCheckout true
   [ -z "$upstream" ] || printf '%s\n' "$upstream" | sed 's|^|/|'
 } > "$(git rev-parse --git-path info/sparse-checkout)"
 
-git read-tree -mu HEAD
+# Stale stat data (a fresh container, another user id) makes git treat clean files as
+# modified and refuse to update the tree, so the index is refreshed first.
+git update-index -q --refresh || true
+git sparse-checkout reapply
 echo "sparse checkout applied: enterprise/ excluded, $(printf '%s' "$upstream" | grep -c . || true) upstream specs included"
