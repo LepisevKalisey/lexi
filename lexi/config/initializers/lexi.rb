@@ -8,3 +8,6 @@ Rails.application.config.to_prepare do
   DashboardController.prepend(Lexi::DashboardController)
   AccountDashboard.prepend(Lexi::AccountDashboard)
 end
+
+# Audit records are Lexi::AuditLog (the core initializer names the Enterprise class).
+Audited.config { |config| config.audit_class = 'Lexi::AuditLog' } unless ChatwootApp.enterprise?

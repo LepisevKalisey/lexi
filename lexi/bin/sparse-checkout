@@ -14,7 +14,7 @@ git config core.sparseCheckout true
 {
   printf '/*\n!/enterprise/\n!/spec/enterprise/\n'
   # a manifest entry may select one example group by line (path:LINE); the file is what counts here
-  [ -z "$upstream" ] || printf '%s\n' "$upstream" | sed -E 's|:[0-9]+$||; s|^|/|'
+  [ -z "$upstream" ] || printf '%s\n' "$upstream" | sed -E 's|(:[0-9]+)+$||; s|^|/|'
 } > "$(git rev-parse --git-path info/sparse-checkout)"
 
 # Stale stat data (a fresh container, another user id) makes git treat clean files as

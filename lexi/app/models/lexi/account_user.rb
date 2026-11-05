@@ -4,6 +4,6 @@ module Lexi::AccountUser
   def permissions
     return super if administrator? || custom_role.nil?
 
-    ['custom_role', *custom_role.permissions]
+    [*custom_role.permissions, 'custom_role']
   end
 end

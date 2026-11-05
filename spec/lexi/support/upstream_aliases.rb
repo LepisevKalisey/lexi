@@ -9,7 +9,9 @@ module Enterprise::Conversations; end
 {
   'Enterprise::Conversations::PermissionFilterService' => 'Lexi::Conversations::PermissionFilterService',
   'Enterprise::AuditLog' => 'Lexi::AuditLog',
-  'Enterprise::AuditLogIpLookupJob' => 'Lexi::AuditLogIpLookupJob'
+  'Enterprise::AuditLogIpLookupJob' => 'Lexi::AuditLogIpLookupJob',
+  'Enterprise::AuditLogSessionIpLookupJob' => 'Lexi::AuditLogSessionIpLookupJob',
+  'Enterprise::AuditLogIpLocationBackfillJob' => 'Lexi::AuditLogIpLocationBackfillJob'
 }.each do |alias_name, lexi_name|
   lexi_constant = lexi_name.safe_constantize
   next if lexi_constant.nil?

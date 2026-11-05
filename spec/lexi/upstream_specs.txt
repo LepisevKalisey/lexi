@@ -1,7 +1,8 @@
 # Upstream Chatwoot specs from spec/enterprise/ that LEXI must pass (L-013).
 # spec/enterprise/ sits outside enterprise/ and is MIT; the tests are used unchanged, as the
 # specification of each feature. One path per line, added when LEXI implements the feature;
-# path:LINE runs only the example group at that line of a file that also covers other features.
+# path:LINE[:LINE...] runs only the example groups at those lines of a file that also covers other
+# features.
 # lexi/bin/sparse-checkout brings exactly these files into the working tree, and lexi-ci.yml
 # runs them against LEXI with enterprise/ removed. Commented paths are planned, not yet passing.
 
@@ -33,6 +34,27 @@ spec/enterprise/policies/category_policy_spec.rb
 spec/enterprise/policies/portal_policy_spec.rb
 spec/enterprise/policies/csat_survey_response_policy_spec.rb
 
-# Audit logs (after custom roles)
-# spec/enterprise/models/enterprise/audit_log_spec.rb
-# spec/enterprise/controllers/api/v1/accounts/audit_logs_controller_spec.rb
+spec/enterprise/models/account_user_spec.rb
+# :8 associations, :159 sla_policies, :291 audit logs; the rest is billing and Captain
+spec/enterprise/models/account_spec.rb:8:159:291
+
+# Audit logs
+spec/enterprise/models/enterprise/audit_log_spec.rb
+spec/enterprise/controllers/api/v1/accounts/audit_logs_controller_spec.rb
+spec/enterprise/controllers/enterprise/api/v1/accounts/conversations/messages_controller_spec.rb
+# sign-in and sign-out groups; SAML and Shopify billing are enterprise only
+spec/enterprise/controllers/enterprise/devise_overrides/session_controller_spec.rb:61:91:103:200:209
+spec/enterprise/jobs/enterprise/audit_log_ip_lookup_job_spec.rb
+spec/enterprise/jobs/enterprise/audit_log_session_ip_lookup_job_spec.rb
+spec/enterprise/jobs/enterprise/audit_log_ip_location_backfill_job_spec.rb
+spec/enterprise/jobs/enterprise/delete_object_job_spec.rb
+# the audit log groups of the inbox spec
+spec/enterprise/models/inbox_spec.rb:160:199:239:335:359
+spec/enterprise/models/inbox_member_spec.rb
+spec/enterprise/models/team_spec.rb
+spec/enterprise/models/team_member_spec.rb
+spec/enterprise/models/macro_spec.rb
+spec/enterprise/models/webhook_spec.rb
+# :9 :15 :22 = create, update, destroy; an sla_policy_id automation condition is not implemented
+spec/enterprise/models/automation_rule_spec.rb:9:15:22
+spec/enterprise/models/user_spec.rb:55
