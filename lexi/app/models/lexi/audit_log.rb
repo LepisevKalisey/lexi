@@ -4,17 +4,30 @@
 # when the account has ip_lookup on; the address itself is shown in full only to accounts with
 # audit_log_ip_address.
 class Lexi::AuditLog < Audited::Audit
+  FILTERED = '[FILTERED]'.freeze
+  # Keys the log filter patterns match (_key, auth) that hold no secret: the attribute of an
+  # automation condition, the SMTP and IMAP authentication method.
+  NOT_SECRET_KEYS = %w[attribute_key smtp_authentication imap_authentication].freeze
+
   before_create :drop_secret_changes, :set_username
   after_create_commit :enqueue_ip_lookup
 
   # Changes without secrets: a secret attribute is left out, a secret key inside a JSON value is
   # masked.
   def self.without_secrets(changes)
-    secret_filter.filter(changes.to_h.reject { |key, _| secret_key?(key) })
+    changes.to_h.reject { |key, _| secret_key?(key) }.transform_values { |value| mask_secrets(value) }
+  end
+
+  def self.mask_secrets(value)
+    case value
+    when Hash then value.to_h { |key, nested| [key, secret_key?(key) ? FILTERED : mask_secrets(nested)] }
+    when Array then value.map { |nested| mask_secrets(nested) }
+    else value
+    end
   end
 
   def self.secret_key?(key)
-    secret_filter.filter_param(key.to_s, true) != true
+    NOT_SECRET_KEYS.exclude?(key.to_s) && secret_filter.filter_param(key.to_s, true) != true
   end
 
   def self.secret_filter

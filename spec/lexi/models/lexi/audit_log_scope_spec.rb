@@ -30,6 +30,16 @@ RSpec.describe Lexi::AuditLog do
     end.not_to change(updates_of('Inbox'), :count)
   end
 
+  it 'keeps keys the log filter patterns match but that hold no secret' do
+    rule = create(:automation_rule, account: account)
+    channel = create(:channel_email, account: account)
+    channel.update!(smtp_authentication: 'plain')
+
+    rule_changes = described_class.find_by!(auditable: rule, action: 'create').audited_changes
+    expect(rule_changes['conditions'].first).to include('attribute_key' => 'status')
+    expect(updates_of('Inbox').last.audited_changes).to have_key('smtp_authentication')
+  end
+
   it 'masks secret keys inside a recorded JSON value' do
     channel = create(:channel_api, account: account)
     channel.update!(additional_attributes: { 'agent_reply_time_window' => 5, 'access_token' => 'nested-secret' })
