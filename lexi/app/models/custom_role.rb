@@ -20,8 +20,9 @@ class CustomRole < ApplicationRecord
   validate :permissions_are_known
 
   before_destroy :remember_user_ids, prepend: true
-  after_update_commit :users_visibility_changed, if: :saved_change_to_permissions?
-  after_destroy_commit :users_visibility_changed
+  # One after_commit: after_update_commit and after_destroy_commit naming the same method
+  # override each other, and only the last one would run.
+  after_commit :users_visibility_changed, on: %i[update destroy], if: -> { destroyed? || saved_change_to_permissions? }
 
   private
 
