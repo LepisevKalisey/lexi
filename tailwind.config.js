@@ -25,6 +25,7 @@ const tailwindConfig = {
   content: [
     './enterprise/app/views/**/*.erb',
     './lexi/app/views/**/*.erb',
+    './lexi/app/javascript/**/*.{vue,js}',
     './app/javascript/widget/**/*.vue',
     './app/javascript/v3/**/*.vue',
     './app/javascript/dashboard/**/*.vue',

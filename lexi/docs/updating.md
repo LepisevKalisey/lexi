@@ -15,7 +15,7 @@ git merge --no-ff vX.Y.Z-fazer-ai.N -m "chore(sync): merge fazer.ai vX.Y.Z-fazer
 | Где | Как решать |
 |---|---|
 | Workflow, удалённые в LEXI (L-010), изменены у fazer.ai | оставить удалёнными: `git rm <файл>` |
-| `lib/chatwoot_app.rb`, `config/application.rb`, `tailwind.config.js` | взять обе стороны: вставки LEXI плюс правки upstream |
+| Файлы из таблицы «Патч ядра» в [README](../README.md): `lib/chatwoot_app.rb`, `config/application.rb`, `tailwind.config.js`, `vite.config.ts` и другие | взять обе стороны: вставки LEXI плюс правки upstream |
 | `enterprise/`, `spec/enterprise/` | не бывает: LEXI их не меняет. Если конфликт всё же возник, взять версию fazer.ai не открывая: `git checkout --theirs -- <путь>` |
 
 ## 2. Проверить, что изменилось у основы
@@ -35,6 +35,8 @@ git diff $OLD $NEW -G'prepend_mod_with|include_mod_with|extend_mod_with' --stat 
 ```
 
 Изменился API-клиент или экран — поправить бэкенд LEXI под новый контракт в той же ветке.
+
+Изменился оригинал подменённого модуля фронтенда — `lexi_frontend_overrides_spec` упадёт. Посмотреть изменение (`git diff $OLD $NEW -- <путь>`), перенести нужное в замену `lexi/<путь>` и записать новый хеш оригинала (`sha256sum <путь>`) в `lexi/vite/overrides.json`.
 
 ## 3. Прогнать проверки и влить
 

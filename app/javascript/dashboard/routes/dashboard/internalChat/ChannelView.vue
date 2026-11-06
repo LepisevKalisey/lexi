@@ -635,6 +635,7 @@ onBeforeUnmount(() => {
         ref="editorRef"
         :disabled="messagesUIFlags.isSending"
         :editing-message="editingMessage"
+        :show-poll="pollsEnabled"
         @send="handleSend"
         @typing="handleTyping"
         @draft-update="handleDraftUpdate"

@@ -3,9 +3,10 @@ import ruby from 'vite-plugin-ruby';
 import vue from '@vitejs/plugin-vue';
 import { aliases, vueOptions } from './vite.shared';
 import yaml from '@rollup/plugin-yaml';
+import lexiOverrides from './lexi/vite/overrides';
 
 export default defineConfig({
-  plugins: [ruby(), vue(vueOptions), yaml()],
+  plugins: [ruby(), vue(vueOptions), yaml(), lexiOverrides()],
   css: {
     preprocessorOptions: {
       scss: {

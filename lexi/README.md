@@ -1,6 +1,6 @@
 # lexi/ — устройство LEXI
 
-LEXI — расширение поверх Chatwoot fazer.ai. Весь код LEXI лежит в `lexi/` и `spec/lexi/`. Ядро Chatwoot меняется в трёх местах — это «патч ядра», ниже. Каталог `enterprise/` принадлежит Chatwoot Inc. Его нет ни в рабочей копии, ни в образе LEXI.
+LEXI — расширение поверх Chatwoot fazer.ai. Весь код LEXI лежит в `lexi/` и `spec/lexi/`. Ядро Chatwoot меняется в нескольких местах — это «патч ядра», ниже. Каталог `enterprise/` принадлежит Chatwoot Inc. Его нет ни в рабочей копии, ни в образе LEXI.
 
 ## Правила чистой реализации
 
@@ -45,13 +45,16 @@ gh codespace ssh -c <имя> -- -N -L 3000:127.0.0.1:3000   # сайт стен�
 
 ## Как LEXI подключается к ядру
 
-**Патч ядра** — только вставки, без правки строк upstream:
+**Патч ядра** — вставки. Строку upstream меняем, только если вставить нельзя: так дописаны `plugins` в `vite.config.ts` и `watchAdditionalPaths` в `config/vite.json`.
 
 | Файл | Что добавлено |
 |---|---|
 | `lib/chatwoot_app.rb` | `lexi?` и `lexi_extensions`: `extensions` возвращает `[enterprise?] lexi [custom]` |
 | `config/application.rb` | загрузка `lexi/config/application.rb`: пути `lexi/app/*` и `lexi/lib`, представления, инициализаторы, переводы |
-| `tailwind.config.js` | `./lexi/app/views/**/*.erb` в `content` |
+| `tailwind.config.js` | `./lexi/app/views/**/*.erb` и `./lexi/app/javascript/**/*.{vue,js}` в `content` |
+| `vite.config.ts` | плагин `lexiOverrides()` — подмена модулей фронтенда, ниже |
+| `config/vite.json` | `watchAdditionalPaths`: автосборка Vite замечает правки в `lexi/app/javascript` и `lexi/vite` |
+| `app/javascript/dashboard/routes/dashboard/internalChat/ChannelView.vue` | `:show-poll="pollsEnabled"`: пока опросы выключены, кнопки опроса нет |
 | `app/views/api/v1/conversations/partials/_conversation.json.jbuilder` | данные SLA беседы: партиал `lexi/api/v1/conversations/partials/conversation` |
 | `app/views/api/v1/models/_agent.json.jbuilder` | `custom_role_id` агента |
 | `app/views/api/v1/models/_user.json.jbuilder` | роль пользователя в каждом аккаунте профиля: партиал `lexi/api/v1/models/account_user` |
@@ -63,6 +66,13 @@ gh codespace ssh -c <имя> -- -N -L 3000:127.0.0.1:3000   # сайт стен�
 **Маршруты.** Маршруты SLA, ролей, аудита, SAML и ёмкости агентов уже объявлены в ядре без условий, нет только контроллеров. LEXI кладёт контроллеры с теми же именами классов в `lexi/app/controllers/`. Маршруты, которые ядро объявляет только при `enterprise?` (звонки, мониторы, аналитика кампаний), LEXI подключит из `lexi/config/routes.rb`, когда до них дойдёт.
 
 **Фронтенд.** Экраны SLA, ролей и аудита открываются, только если установка — enterprise и её план не `community`. `Lexi::DashboardController` сообщает фронтенду `IS_ENTERPRISE=true` и план `lexi`. План в базе не меняется: по нему бэкенд, например, решает, показывать ли вход через SAML. Что видит каждый аккаунт, решают флаги аккаунта.
+
+**Подмена модулей фронтенда.** Файлы фронтенда fazer.ai LEXI не правит. Если модуль нужно заменить целиком, замена лежит по тому же пути внутри `lexi/`, а путь оригинала записан в `lexi/vite/overrides.json`. При сборке плагин `lexi/vite/overrides.ts` подставляет замену везде, где импортируется оригинал. В манифесте рядом с путём — SHA256 оригинала, с которым сверена замена. Если fazer.ai изменит оригинал, упадёт `spec/lexi/lexi_frontend_overrides_spec.rb`: сверить замену с новой версией и записать новый хеш.
+
+| Оригинал (`app/javascript/dashboard/routes/dashboard/…`) | Замена LEXI |
+|---|---|
+| `kanban/kanban.routes.js` | Канбан fazer.ai — платный закрытый модуль, в открытом коде только пункт меню и реклама подписки. Маршрут остаётся, его имя нужно меню. Пункт скрыт флагом `kanban`, которого у аккаунтов нет. Прямая ссылка ведёт на главную (L-016) |
+| `internalChat/ProFeatureNudge.vue` | Вместо «купите Pro» — объяснение ограничения: предел приватных каналов, поиск за последние 90 дней. Сами ограничения внутреннего чата — как в открытом коде fazer.ai. Строки — в компоненте, английский и русский (L-016) |
 
 **Супер-админка.** На странице аккаунта есть поле «Функции» — галочки флагов. Их сохраняет контроллер ядра `SuperAdmin::AccountsController`. Флаги по умолчанию для новых аккаунтов задаёт `ACCOUNT_LEVEL_FEATURE_DEFAULTS`, это механизм ядра.
 
@@ -88,6 +98,8 @@ lexi/
   lib/lexi.rb                 модуль Lexi: VERSION, PLAN_NAME
   app/<слой>/lexi/…           модули Lexi::Имя для точек ядра
   app/<слой>/…                новые классы с именами upstream (SlaPolicy, CustomRole…)
+  app/javascript/…            замены модулей фронтенда, по путям оригиналов
+  vite/                       плагин подмены и манифест overrides.json
   bin/                        sparse-checkout, codespace-setup, codespace-start
   docs/decisions.md           журнал решений L-xxx
   docs/updating.md            обновление под релизы fazer.ai и Chatwoot
