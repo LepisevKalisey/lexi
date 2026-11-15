@@ -1,7 +1,8 @@
 name: LEXI release image
 
 # Builds ghcr.io/<owner>/lexi from a release tag such as v4.18.0-lexi.1. enterprise/ is
-# removed before the build: a LEXI image never contains Chatwoot Enterprise code.
+# removed before the build, and lexi/docker/Dockerfile does not download it either (L-017):
+# a LEXI image never contains Chatwoot Enterprise code.
 # Adapted from fazer.ai's publish_github_docker.yml (MIT).
 
 permissions:
@@ -61,7 +62,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: docker/Dockerfile
+          file: lexi/docker/Dockerfile
           platforms: ${{ matrix.platform }}
           labels: |
             org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}

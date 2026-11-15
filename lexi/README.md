@@ -100,6 +100,7 @@ lexi/
   app/<слой>/…                новые классы с именами upstream (SlaPolicy, CustomRole…)
   app/javascript/…            замены модулей фронтенда, по путям оригиналов
   vite/                       плагин подмены и манифест overrides.json
+  docker/                     Dockerfile образа LEXI и хеш оригинала fazer.ai (upstream.json)
   bin/                        sparse-checkout, codespace-setup, codespace-start
   docs/decisions.md           журнал решений L-xxx
   docs/updating.md            обновление под релизы fazer.ai и Chatwoot
@@ -113,7 +114,8 @@ spec/lexi/upstream_specs.txt  тесты upstream, которые LEXI обяз�
 
 - `lexi-ci.yml` — на любой пуш: clean-room, Rubocop по файлам LEXI, `rspec spec/lexi`.
 - `run_foss_spec.yml` (fazer.ai) — полный набор тестов Chatwoot без `enterprise/` на каждый пуш в `main`.
-- `lexi-release.yml` — образ `ghcr.io/lepisevkalisey/lexi:<тег>` для amd64 и arm64 при публикации релиза, например `v4.18.0-lexi.1`.
+- `lexi-release.yml` — образ `ghcr.io/lepisevkalisey/lexi:<тег>` для amd64 и arm64 при публикации релиза, например `v4.18.0-lexi.1`. Ручной запуск из ветки собирает пробный образ с тегом по имени ветки, `latest` не трогает.
+- Образ собирается из `lexi/docker/Dockerfile` (L-017): это `docker/Dockerfile` fazer.ai без скачивания `enterprise/`. С `CW_EDITION=ee` контейнер LEXI не стартует. Хеш оригинала, с которым сверен файл, — в `lexi/docker/upstream.json`; изменение оригинала ловит `spec/lexi/lexi_docker_spec.rb`.
 - В описании релиза указывать основу: тег fazer.ai, например `v4.18.0-fazer-ai.125`.
 
 Конвенции кода — те же, что у fazer.ai, см. `AGENTS.md` в корне: Rubocop, Conventional Commits, спеки на основные сценарии.
