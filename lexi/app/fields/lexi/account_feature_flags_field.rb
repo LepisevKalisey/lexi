@@ -11,7 +11,7 @@ class Lexi::AccountFeatureFlagsField < Administrate::Field::Base
   # [[name, display_name, enabled], ...], regular features first, then premium ones
   def features
     SuperAdmin::AccountFeaturesHelper.partition_features(data).reduce(:merge).map do |(name, display_name), enabled|
-      [name, display_name, enabled]
+      [name, display_name || Lexi::Account::FEATURES[name], enabled]
     end
   end
 

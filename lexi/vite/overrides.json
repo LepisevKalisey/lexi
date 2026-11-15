@@ -1,4 +1,5 @@
 {
   "app/javascript/dashboard/routes/dashboard/kanban/kanban.routes.js": "04027638d4e6294a610fa6786da211230b36293a1f680f83362b3e4757bdb966",
-  "app/javascript/dashboard/routes/dashboard/internalChat/ProFeatureNudge.vue": "2e5da1ef5c051a545f229fc864c20b6f60270ecb4d6e5b0d27fbcb61ed895d9b"
+  "app/javascript/dashboard/routes/dashboard/internalChat/ProFeatureNudge.vue": "2e5da1ef5c051a545f229fc864c20b6f60270ecb4d6e5b0d27fbcb61ed895d9b",
+  "app/javascript/dashboard/routes/dashboard/internalChat/internalChat.routes.js": "1369e4e11faa9372542b80f98bebc16a302dff2e9a5308b9b5e2c59f4ff8d22d"
 }

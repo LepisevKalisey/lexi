@@ -24,6 +24,20 @@ RSpec.describe 'LEXI super admin account features', type: :request do
     expect(response.body).to include('name="enabled_features[feature_search_with_gin]"')
   end
 
+  it 'switches the LEXI internal chat feature with the other checkboxes' do
+    get "/super_admin/accounts/#{account.id}/edit"
+    expect(response.body).to include('id="lexi_feature_internal_chat"')
+    expect(response.body).to include('Internal Chat')
+
+    patch "/super_admin/accounts/#{account.id}",
+          params: { account: { name: account.name }, enabled_features: { feature_internal_chat: '1' } }
+    expect(account.reload.feature_enabled?('internal_chat')).to be(true)
+
+    patch "/super_admin/accounts/#{account.id}",
+          params: { account: { name: account.name }, enabled_features: { feature_sla: '1' } }
+    expect(account.reload.feature_enabled?('internal_chat')).to be(false)
+  end
+
   it 'replaces the account features with the checked ones' do
     account.enable_features!('inbound_emails')
 

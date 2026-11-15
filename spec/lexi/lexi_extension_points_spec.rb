@@ -8,6 +8,7 @@ RSpec.describe Lexi do
       %w[AccountDashboard Lexi::AccountDashboard],
       %w[Conversation Lexi::Concerns::Conversation],
       %w[Account Lexi::Concerns::Account],
+      %w[Account Lexi::Account],
       %w[AccountUser Lexi::AccountUser],
       %w[AccountUser Lexi::Concerns::AccountUser],
       %w[Conversations::EventDataPresenter Lexi::Conversations::EventDataPresenter],
