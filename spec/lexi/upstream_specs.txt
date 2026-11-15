@@ -28,7 +28,8 @@ spec/enterprise/services/enterprise/conversations/permission_filter_service_spec
 spec/enterprise/policies/conversation_policy_spec.rb:16
 spec/enterprise/policies/contact_policy_spec.rb
 spec/enterprise/policies/report_policy_spec.rb
-spec/enterprise/policies/message_policy_spec.rb
+# message_policy_spec.rb was fazer.ai's, not upstream's; since .148 its example lives in
+# spec/lexi/policies/message_policy_custom_role_spec.rb
 spec/enterprise/policies/article_policy_spec.rb
 spec/enterprise/policies/category_policy_spec.rb
 spec/enterprise/policies/portal_policy_spec.rb
