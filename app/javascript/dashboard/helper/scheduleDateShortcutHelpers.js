@@ -166,6 +166,7 @@ export const preProcessDateInput = text => {
 
 // chrono ships one parser per language; the bare export is the English one.
 const CHRONO_PARSERS = { pt: chrono.pt, es: chrono.es, en: chrono };
+CHRONO_PARSERS.ru = chrono.ru; // LEXI: Russian dates in scheduled messages (L-019)
 
 /**
  * Parse a natural language date/time string using chrono-node.

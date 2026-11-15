@@ -40,6 +40,18 @@ jobs:
           fi
           echo "LEXI commits since the fazer.ai base: $(git rev-list --no-merges --count refs/remotes/fazer/main..HEAD); none touch enterprise/."
 
+  translations:
+    name: LEXI translations match fazer.ai's strings
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            lexi
+            app/javascript/dashboard/i18n/fazer-ai
+      # A fazer.ai sync that adds or changes strings fails here until LEXI translates them (L-019)
+      - run: python3 -I lexi/bin/check-translations
+
   rubocop:
     name: Rubocop (LEXI files)
     # ruby/setup-ruby has no Ruby 3.4.4 build for ubuntu-latest (26.04); fazer.ai pins 24.04 too

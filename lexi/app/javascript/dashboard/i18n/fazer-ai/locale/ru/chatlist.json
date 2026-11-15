@@ -1,0 +1,8 @@
+{
+  "CHAT_LIST": {
+    "TYPING": "печатает...",
+    "RECORDING": "записывает...",
+    "REACTED": "{sender}: реакция {emoji}",
+    "REACTED_TO_SNIPPET": "{sender}: реакция {emoji} на «{snippet}»"
+  }
+}

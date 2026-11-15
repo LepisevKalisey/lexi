@@ -1,0 +1,62 @@
+{
+  "PROFILE_SETTINGS": {
+    "FORM": {
+      "MESSAGE_SIGNATURE_SECTION": {
+        "RESET_TO_DEFAULT": "Вернуть по умолчанию",
+        "RESET_SUCCESS": "Подпись для источника удалена, используется подпись по умолчанию",
+        "INBOX_SELECTOR": {
+          "LABEL": "Источник",
+          "DEFAULT": "По умолчанию (все источники)",
+          "CUSTOM": "Своя"
+        },
+        "SIGNATURE_POSITION": {
+          "LABEL": "Положение подписи",
+          "OPTIONS": {
+            "TOP": "В начале сообщения",
+            "BOTTOM": "В конце сообщения"
+          }
+        },
+        "SIGNATURE_SEPARATOR": {
+          "LABEL": "Разделитель подписи",
+          "OPTIONS": {
+            "BLANK": "Пустая строка",
+            "HORIZONTAL_LINE": "Горизонтальная линия (--)"
+          }
+        },
+        "PREVIEW": {
+          "TITLE": "Предпросмотр подписи",
+          "NOTE": "Так ваша подпись будет выглядеть в сообщениях",
+          "EMPTY": "Введите подпись выше, чтобы увидеть предпросмотр",
+          "SAMPLE_MESSAGE": "Здравствуйте! Спасибо, что обратились к нам. Чем могу помочь?"
+        }
+      },
+      "NOTIFICATIONS": {
+        "TYPES": {
+          "INTERNAL_CHAT_MENTION": "Вас упомянули во внутреннем чате",
+          "INTERNAL_CHAT_NEW_MESSAGE": "Новое личное сообщение во внутреннем чате"
+        }
+      }
+    },
+    "EMAIL_CONFIRMATION_PENDING": "Мы отправили ссылку для подтверждения на {email}. Текущий адрес продолжит работать, пока вы не перейдёте по ней."
+  },
+  "COMPONENTS": {
+    "REFERRAL_CARD": {
+      "AD_LABEL": "Из рекламы",
+      "VIEW_AD": "Открыть объявление"
+    },
+    "MEDIA": {
+      "AUDIO_UNAVAILABLE": "Это аудио больше недоступно.",
+      "VIDEO_UNAVAILABLE": "Это видео больше недоступно."
+    }
+  },
+  "SIDEBAR": {
+    "INTERNAL_CHAT": "Внутренний чат",
+    "KANBAN": "Канбан",
+    "APPS": "Приложения"
+  },
+  "KEYBOARD_SHORTCUTS": {
+    "TITLE": {
+      "PIN_CONVERSATION": "Закрепить / открепить диалог"
+    }
+  }
+}

@@ -55,6 +55,7 @@ gh codespace ssh -c <имя> -- -N -L 3000:127.0.0.1:3000   # сайт стен�
 | `vite.config.ts` | плагин `lexiOverrides()` — подмена модулей фронтенда, ниже |
 | `config/vite.json` | `watchAdditionalPaths`: автосборка Vite замечает правки в `lexi/app/javascript` и `lexi/vite` |
 | `app/javascript/dashboard/routes/dashboard/internalChat/ChannelView.vue` | `:show-poll="pollsEnabled"`: пока опросы выключены, кнопки опроса нет |
+| `app/javascript/dashboard/helper/scheduleDateShortcutHelpers.js` | `CHRONO_PARSERS.ru = chrono.ru`: отложенные сообщения понимают даты по-русски («завтра в 14:00») |
 | `app/views/api/v1/conversations/partials/_conversation.json.jbuilder` | данные SLA беседы: партиал `lexi/api/v1/conversations/partials/conversation` |
 | `app/views/api/v1/models/_agent.json.jbuilder` | `custom_role_id` агента |
 | `app/views/api/v1/models/_user.json.jbuilder` | роль пользователя в каждом аккаунте профиля: партиал `lexi/api/v1/models/account_user` |
@@ -74,6 +75,11 @@ gh codespace ssh -c <имя> -- -N -L 3000:127.0.0.1:3000   # сайт стен�
 | `kanban/kanban.routes.js` | Канбан fazer.ai — платный закрытый модуль, в открытом коде только пункт меню и реклама подписки. Маршрут остаётся, его имя нужно меню. Пункт скрыт флагом `kanban`, которого у аккаунтов нет. Прямая ссылка ведёт на главную (L-016) |
 | `internalChat/ProFeatureNudge.vue` | Вместо «купите Pro» — объяснение ограничения: предел приватных каналов, поиск за последние 90 дней. Сами ограничения внутреннего чата — как в открытом коде fazer.ai. Строки — в компоненте, английский и русский (L-016) |
 | `internalChat/internalChat.routes.js` | Те же маршруты с флагом `internal_chat`: пока функция аккаунта выключена, пункта меню нет. Корневой компонент — `InternalChatGate.vue`: при выключенной функции прямая ссылка ведёт на главную (L-018) |
+| `app/javascript/dashboard/i18n/fazer-ai/index.js` (путь от корня) | Строки fazer.ai плюс переводы LEXI поверх них из `lexi/app/javascript/dashboard/i18n/fazer-ai/locale/<язык>/` (L-019) |
+
+Плагин подменяет и `index.js`, когда его импортируют по имени каталога (`./fazer-ai`).
+
+**Русский перевод строк fazer.ai (L-019).** fazer.ai переводит свои строки только на английский, испанский и португальский. Русский перевод LEXI лежит в `lexi/app/javascript/dashboard/i18n/fazer-ai/locale/ru/`, по файлу на каждый файл fazer.ai, кроме `kanban.json`. Термины — как в русском Chatwoot: диалог, источник, оператор, метка. `python3 lexi/bin/check-translations` сверяет ключи, подстановки (`{name}`, `@:KEY`, HTML) и число форм `|` с английским fazer.ai. `lexi-ci` запускает его на каждый пуш: если синхронизация принесла новые строки, CI упадёт, пока их не переведут. Известный пробел: подписи повторов в отложенных сообщениях fazer.ai собирает из английских названий дней недели и месяцев (`recurrenceHelpers.js`), в русском интерфейсе они остаются английскими.
 
 **Функции аккаунта LEXI.** Функции, которых нет в `config/features.yml`, LEXI хранит в `accounts.settings` с префиксом `lexi_` (модуль `Lexi::Account`, L-018). Для остального кода они выглядят как обычные флаги: `feature_enabled?`, `enable_features!`, `all_features`, данные аккаунта для фронтенда, галочки супер-админки. Битом в `features.yml` их не делаем: бит — позиция в списке, и флаг LEXI занял бы место следующего флага upstream. Сейчас такая функция одна — `internal_chat`, внутренний чат fazer.ai, по умолчанию выключен.
 

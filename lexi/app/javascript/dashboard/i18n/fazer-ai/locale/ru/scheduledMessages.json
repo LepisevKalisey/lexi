@@ -1,0 +1,169 @@
+{
+  "SCHEDULED_MESSAGES": {
+    "NEW_BUTTON": "Запланировать сообщение",
+    "PAST_MESSAGES_SECTION": "Отправленные",
+    "EMPTY_STATE": "Запланированных сообщений пока нет.",
+    "STATUS": {
+      "DRAFT": "Черновик",
+      "PENDING": "В ожидании",
+      "SENT": "Отправлено",
+      "FAILED": "Ошибка",
+      "HELD": "Задержано"
+    },
+    "HELD_SECTION": "Задержанные",
+    "ITEM": {
+      "SCHEDULED_FOR": "Запланировано на {time}",
+      "NO_SCHEDULE": "Без расписания",
+      "TEMPLATE_PREVIEW": "Шаблон: {name}",
+      "TEMPLATE_LABEL": "Шаблон: {name}",
+      "ATTACHMENT_PREVIEW": "Вложение: {filename}",
+      "ATTACHMENT_LABEL": "Вложение: {filename}",
+      "EMPTY_PREVIEW": "Нет содержимого",
+      "EXPAND": "Развернуть",
+      "COLLAPSE": "Свернуть",
+      "GO_TO_MESSAGE": "Перейти к сообщению",
+      "SEARCHING_MESSAGE": "Поиск сообщения...",
+      "MESSAGE_NOT_FOUND": "Связанное сообщение не найдено. Возможно, оно было удалено.",
+      "HELD_REASON": "Задержано, так как клиент ответил до отправки этого сообщения."
+    },
+    "MODAL": {
+      "TITLE_NEW": "Запланировать сообщение",
+      "TITLE_EDIT": "Изменить запланированное сообщение",
+      "MESSAGE_LABEL": "Сообщение",
+      "MESSAGE_PLACEHOLDER": "Напишите сообщение...",
+      "DATETIME_LABEL": "Дата и время отправки",
+      "ATTACHMENT_LABEL": "Вложение",
+      "ATTACHMENT_ADD": "Прикрепить файл",
+      "ATTACHMENT_CURRENT": "Текущее вложение: {filename}",
+      "TEMPLATE_SELECT": "Использовать шаблон",
+      "TEMPLATE_SELECTED": "Шаблон: {name}",
+      "TEMPLATE_ACTION": "Запланировать сообщение",
+      "CANCEL": "Отмена",
+      "SAVE_DRAFT": "Сохранить как черновик",
+      "SCHEDULE": "Запланировать",
+      "HOLD_ON_REPLY_LABEL": "Задержать, если клиент ответит первым",
+      "HOLD_ON_REPLY_DESCRIPTION": "Если клиент напишет до отправки этого сообщения, оно будет задержано для проверки и не отправится автоматически.",
+      "SHORTCUTS": {
+        "TOMORROW_MORNING": "Завтра утром",
+        "TOMORROW_AFTERNOON": "Завтра днём",
+        "MONDAY_MORNING": "В понедельник утром",
+        "CUSTOM": "Ввести дату и время"
+      },
+      "CUSTOM_INPUT_PLACEHOLDER": "например, завтра в 14:00, в следующую пятницу утром",
+      "CUSTOM_INPUT_HINT": "Попробуйте: завтра в 15:00, в следующий понедельник, через 2 часа",
+      "PARSED_DATE_IN_PAST": "Эта дата уже прошла",
+      "DATEPICKER_TOOLTIP": "Выбрать в календаре",
+      "SCHEDULE_LABEL": "Запланировать отправку"
+    },
+    "CONFIRM_CLOSE": {
+      "TITLE": "Несохранённые изменения",
+      "MESSAGE": "У вас есть несохранённое содержимое. Сбросить изменения?",
+      "CONTINUE_EDITING": "Продолжить редактирование",
+      "DISCARD": "Сбросить",
+      "CANCEL": "Отмена"
+    },
+    "CONFIRM_DELETE": {
+      "TITLE": "Удалить запланированное сообщение",
+      "MESSAGE": "Вы действительно хотите удалить это запланированное сообщение? Это действие нельзя отменить.",
+      "CANCEL": "Отмена",
+      "DELETE": "Удалить"
+    },
+    "META": {
+      "TOOLTIP": "Запланировано {time}, автор: {author}",
+      "YOU": "Вы",
+      "AUTHOR_YOU": "{name} (вы)",
+      "AUTOMATION": "Автоматизация",
+      "UNKNOWN_AUTHOR": "Неизвестно"
+    },
+    "ERRORS": {
+      "CONTENT_REQUIRED": "Перед сохранением добавьте сообщение, шаблон или вложение.",
+      "CONTENT_TOO_LONG": "Сообщение слишком длинное. Допустимо не более {maxLength} символов.",
+      "DATETIME_REQUIRED": "Выберите дату и время отправки сообщения.",
+      "SCHEDULE_IN_PAST": "Время отправки должно быть в будущем.",
+      "SAVE_FAILED": "Не удалось сохранить запланированное сообщение. Пожалуйста, попробуйте ещё раз.",
+      "DELETE_FAILED": "Не удалось удалить запланированное сообщение. Пожалуйста, попробуйте ещё раз."
+    },
+    "RECURRENCE": {
+      "SECTION_TITLE": "Повторения",
+      "NO_REPEAT": "Не повторять",
+      "DAILY": "Каждый день",
+      "WEEKLY": "Еженедельно: {day}",
+      "MONTHLY_NTH": "Ежемесячно: {nth} {day}",
+      "MONTHLY_LAST": "Ежемесячно: последний {day}",
+      "YEARLY": "Ежегодно: {dayNum} {month}",
+      "WEEKDAYS": "Каждый будний день (пн–пт)",
+      "CUSTOM": "Настроить...",
+      "CUSTOM_MODAL": {
+        "TITLE": "Настраиваемое повторение",
+        "REPEAT_EVERY": "Повторять раз в",
+        "FREQ_DAILY": "дн.",
+        "FREQ_WEEKLY": "нед.",
+        "FREQ_MONTHLY": "мес.",
+        "FREQ_YEARLY": "г.",
+        "UNIT_DAY": "день | дней",
+        "UNIT_WEEK": "неделя | недель",
+        "UNIT_MONTH": "месяц | месяцев",
+        "UNIT_YEAR": "год | лет",
+        "REPEAT_ON": "Дни повторения",
+        "MONTHLY_ON_DAY": "День месяца",
+        "MONTHLY_ON_WEEKDAY": "День недели",
+        "ENDS": "Окончание",
+        "ENDS_NEVER": "Никогда",
+        "ENDS_ON_DATE": "В указанную дату",
+        "ENDS_AFTER": "После",
+        "ENDS_OCCURRENCES": "повторений",
+        "DONE": "Готово",
+        "CANCEL": "Отмена"
+      },
+      "STATUS_ACTIVE": "Активно",
+      "STATUS_DRAFT": "Черновик",
+      "STATUS_COMPLETED": "Завершено",
+      "STATUS_CANCELLED": "Отменено",
+      "OCCURRENCES_SENT": "Отправлено: {count}",
+      "NEXT_SEND": "Далее: {time}",
+      "EXPAND": "Развернуть историю",
+      "COLLAPSE": "Свернуть историю",
+      "STOP": "Остановить повторение",
+      "STOP_CONFIRM": {
+        "TITLE": "Остановить повторение",
+        "MESSAGE": "Ожидающее сообщение будет удалено, а повторение остановлено навсегда.",
+        "CONFIRM": "Остановить",
+        "CANCEL": "Отмена"
+      },
+      "EDIT": "Изменить повторение",
+      "EDIT_WARNING": "Следующая отправка: {oldDate} → {newDate}",
+      "WEEKDAYS_SHORT": {
+        "SUN": "Вс",
+        "MON": "Пн",
+        "TUE": "Вт",
+        "WED": "Ср",
+        "THU": "Чт",
+        "FRI": "Пт",
+        "SAT": "Сб"
+      },
+      "ORDINALS": {
+        "FIRST": "первый",
+        "SECOND": "второй",
+        "THIRD": "третий",
+        "FOURTH": "четвёртый",
+        "FIFTH": "пятый",
+        "LAST": "последний"
+      },
+      "DESCRIPTION": {
+        "DAILY_ONE": "Каждый день",
+        "DAILY_OTHER": "Раз в {count} дн.",
+        "WEEKLY_ONE": "Каждую неделю",
+        "WEEKLY_OTHER": "Раз в {count} нед.",
+        "WEEKLY_ON": "{prefix}: {days}",
+        "MONTHLY_ONE": "Ежемесячно",
+        "MONTHLY_OTHER": "Раз в {count} мес.",
+        "MONTHLY_ON_WEEKDAY": "{prefix}: {ordinal} {weekday}",
+        "YEARLY_ONE": "Каждый год",
+        "YEARLY_OTHER": "Раз в {count} г.",
+        "UNTIL_DATE": "до {date}",
+        "AFTER_COUNT": "повторений: {count}"
+      },
+      "RESOLVED_WARNING": "Запланированные сообщения не отправляются, пока диалог закрыт. Откройте диалог снова, чтобы возобновить отправку."
+    }
+  }
+}

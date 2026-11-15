@@ -16,6 +16,12 @@ RSpec.describe Lexi do
       expect(Rails.root.join('vite.config.ts').read).to include('lexiOverrides()')
     end
 
+    it 'parses Russian dates in scheduled messages' do
+      helper = Rails.root.join('app/javascript/dashboard/helper/scheduleDateShortcutHelpers.js')
+
+      expect(helper.read).to include('CHRONO_PARSERS.ru = chrono.ru;')
+    end
+
     it 'hides the internal chat poll button while polls are off' do
       channel_view = Rails.root.join('app/javascript/dashboard/routes/dashboard/internalChat/ChannelView.vue')
 

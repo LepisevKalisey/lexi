@@ -1,0 +1,35 @@
+{
+  "INTEGRATION_SETTINGS": {
+    "WEBHOOK": {
+      "FORM": {
+        "SUBSCRIPTIONS": {
+          "EVENTS": {
+            "MESSAGE_INCOMING": "Входящее сообщение",
+            "MESSAGE_OUTGOING": "Исходящее сообщение",
+            "CONVERSATION_RECORDING": "Запись аудио в диалоге",
+            "PROVIDER_EVENT_RECEIVED": "Получено событие провайдера",
+            "INTERNAL_CHAT_MESSAGE_CREATED": "Сообщение во внутреннем чате создано",
+            "INTERNAL_CHAT_MESSAGE_UPDATED": "Сообщение во внутреннем чате обновлено",
+            "INTERNAL_CHAT_MESSAGE_DELETED": "Сообщение во внутреннем чате удалено",
+            "INTERNAL_CHAT_CHANNEL_UPDATED": "Канал внутреннего чата обновлён"
+          }
+        },
+        "INBOX": {
+          "LABEL": "Источник",
+          "TITLE": "Выберите источник",
+          "PLACEHOLDER": "Все источники",
+          "NO_RESULTS": "Источники не найдены",
+          "INPUT_PLACEHOLDER": "Поиск источника"
+        }
+      }
+    },
+    "DASHBOARD_APPS": {
+      "VIEW": {
+        "NOT_FOUND": "Не удалось найти это приложение панели."
+      },
+      "FORM": {
+        "SHOW_ON_SIDEBAR_LABEL": "Показывать на боковой панели"
+      }
+    }
+  }
+}

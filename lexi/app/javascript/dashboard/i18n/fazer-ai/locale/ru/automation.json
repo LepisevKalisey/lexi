@@ -1,0 +1,41 @@
+{
+  "AUTOMATION": {
+    "ACTION": {
+      "SCHEDULED_MESSAGE_DELAY_LABEL": "Задержка",
+      "ATTACHMENT_ADD": "Добавить вложение",
+      "TEMPLATE_SELECT": "Использовать шаблон",
+      "TEMPLATE_SELECTED": "Шаблон: {name}",
+      "TEMPLATE_USE": "Использовать этот шаблон"
+    },
+    "ACTIONS": {
+      "CREATE_SCHEDULED_MESSAGE": "Создать запланированное сообщение",
+      "REMOVE_CUSTOM_ATTRIBUTE": "Удалить пользовательский атрибут"
+    },
+    "ATTRIBUTES": {
+      "SENDER": "Отправитель",
+      "SENDER_TYPE": "Тип отправителя"
+    },
+    "SENDER_TYPES": {
+      "CONTACT": "Контакт",
+      "USER": "Оператор",
+      "AGENT_BOT": "Бот",
+      "CAPTAIN": "Captain"
+    },
+    "EVENTS": {
+      "MESSAGE_EDITED": "Сообщение изменено"
+    },
+    "ADD": {
+      "FORM": {
+        "WAIT": {
+          "OPTIONS": {
+            "CONVERSATION_INACTIVE": "В диалоге нет активности"
+          },
+          "EXPLANATION": {
+            "CONVERSATION_INACTIVE": "Отсчёт начинается с последней активности в диалоге. Если в течение {duration} ничего не происходит, выполняются действия ниже. Любая новая активность запускает отсчёт заново."
+          },
+          "INBOX_ERROR": "Выберите хотя бы один источник для этого ожидания."
+        }
+      }
+    }
+  }
+}

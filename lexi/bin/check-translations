@@ -1,0 +1,67 @@
+#!/usr/bin/env python3
+"""Checks LEXI's translations of fazer.ai strings against fazer.ai's English.
+
+For every lexi/app/javascript/dashboard/i18n/fazer-ai/locale/<lang>/<file>.json: the same keys
+as fazer.ai's en/<file>.json, and in every string the same placeholders ({name}, %{name}),
+linked messages (@:key), HTML tags and number of plural forms (|). Prints what differs and
+exits 1. Run from the repository root: python3 lexi/bin/check-translations [lang]
+"""
+import glob
+import json
+import os
+import re
+import sys
+
+FAZER = 'app/javascript/dashboard/i18n/fazer-ai/locale/en'
+LEXI = 'lexi/app/javascript/dashboard/i18n/fazer-ai/locale'
+# fazer.ai files LEXI does not translate: Kanban is hidden (L-016)
+NOT_TRANSLATED = {'kanban.json'}
+TOKENS = re.compile(r'%?\{[^{}]*\}|@:[\w.]+|</?[a-zA-Z][^>]*>')
+
+
+def flat(tree, prefix=''):
+    for key, value in tree.items():
+        if isinstance(value, dict):
+            yield from flat(value, f'{prefix}{key}.')
+        else:
+            yield f'{prefix}{key}', value
+
+
+def load(path):
+    with open(path, encoding='utf-8') as file:
+        return dict(flat(json.load(file)))
+
+
+def main():
+    langs = sys.argv[1:] or sorted(os.listdir(LEXI)) if os.path.isdir(LEXI) else []
+    problems = []
+    for lang in langs:
+        for english_path in sorted(glob.glob(f'{FAZER}/*.json')):
+            name = os.path.basename(english_path)
+            if name not in NOT_TRANSLATED and not os.path.exists(f'{LEXI}/{lang}/{name}'):
+                problems.append(f'{lang}/{name}: not translated (fazer.ai has en/{name})')
+        for path in sorted(glob.glob(f'{LEXI}/{lang}/*.json')):
+            name = os.path.basename(path)
+            english_path = f'{FAZER}/{name}'
+            if not os.path.exists(english_path):
+                problems.append(f'{lang}/{name}: fazer.ai has no en/{name}')
+                continue
+            english, translated = load(english_path), load(path)
+            for key in sorted(english.keys() - translated.keys()):
+                problems.append(f'{lang}/{name}: missing {key}')
+            for key in sorted(translated.keys() - english.keys()):
+                problems.append(f'{lang}/{name}: not in fazer.ai {key}')
+            for key in sorted(english.keys() & translated.keys()):
+                source, target = str(english[key]), str(translated[key])
+                if sorted(TOKENS.findall(source)) != sorted(TOKENS.findall(target)):
+                    problems.append(f'{lang}/{name}: {key}: placeholders {TOKENS.findall(source)} -> {TOKENS.findall(target)}')
+                if source.count('|') != target.count('|'):
+                    problems.append(f'{lang}/{name}: {key}: plural forms {source.count("|") + 1} -> {target.count("|") + 1}')
+                if not target.strip() and source.strip():
+                    problems.append(f'{lang}/{name}: {key}: empty')
+    print('\n'.join(problems) or 'ok')
+    return 1 if problems else 0
+
+
+if __name__ == '__main__':
+    sys.exit(main())

@@ -38,6 +38,8 @@ git diff $OLD $NEW -G'prepend_mod_with|include_mod_with|extend_mod_with' --stat 
 
 Изменился `docker/Dockerfile` — упадёт `lexi_docker_spec`. Перенести изменение в `lexi/docker/Dockerfile`, кроме шагов, которые скачивают или подключают `enterprise/` (L-017), и записать новый хеш оригинала в `lexi/docker/upstream.json`.
 
+fazer.ai добавил или изменил строки интерфейса — упадёт задача переводов в `lexi-ci`. `python3 lexi/bin/check-translations` покажет, каких ключей не хватает: перевести их в `lexi/app/javascript/dashboard/i18n/fazer-ai/locale/ru/` (L-019).
+
 Изменился оригинал подменённого модуля фронтенда — `lexi_frontend_overrides_spec` упадёт. Посмотреть изменение (`git diff $OLD $NEW -- <путь>`), перенести нужное в замену `lexi/<путь>` и записать новый хеш оригинала (`sha256sum <путь>`) в `lexi/vite/overrides.json`.
 
 ## 3. Прогнать проверки и влить

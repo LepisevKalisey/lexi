@@ -16,7 +16,13 @@ export default function lexiOverrides(): Plugin {
       normalizePath(path.resolve('./lexi', original)),
     ])
   );
-  const basenames = originals.map(original => path.basename(original));
+  // An index file is also imported by its directory: './fazer-ai' for fazer-ai/index.js.
+  const basenames = originals.flatMap(original => {
+    const base = path.basename(original);
+    return base.startsWith('index.')
+      ? [base, path.basename(path.dirname(original))]
+      : [base];
+  });
   // Imports often omit the extension: './kanban/kanban.routes'.
   const mayBeOverridden = (source: string) => {
     if (source.includes('?')) return false;
