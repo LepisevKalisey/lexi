@@ -6,7 +6,8 @@ require 'rails_helper'
 # lexi/docker/upstream.json.
 RSpec.describe Lexi do
   describe 'Docker image' do
-    let(:dockerfile) { Rails.root.join('lexi/docker/Dockerfile').read }
+    # Instructions only: the header comment names what was taken out
+    let(:dockerfile) { Rails.root.join('lexi/docker/Dockerfile').readlines.grep_v(/\A\s*#/).join }
 
     JSON.parse(Rails.root.join('lexi/docker/upstream.json').read).each do |original, sha256|
       it "follows #{original} as reviewed" do
